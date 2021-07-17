@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "../../../../enspiregit/enspire_ai"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../controls_cpp/notes"
+		},
+		{
+			"name": "enspireai",
+			"path": "../../../../enspiregit/githubio/enspireai"
+		},
+		{
+			"path": "../../notes/darienmt/darienmt_motion_plan"
+		},
+		{
+			"path": "../../motion_planning"
+		}
+	],
+	"settings": {}
+}
