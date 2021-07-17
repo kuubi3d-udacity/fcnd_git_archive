@@ -241,43 +241,37 @@ class RRT:
                 print ("Goal Found.")
                 
                 goal_path = RRT(x_init)
-                x_near = x_goal
                 num_v = range(num_vertices)                     
-                x_start = rrt(0)
-
+                x_start = (RRT.x_init[0], RRT.x_init[1])
 
                 for i in range(num_vertices,0,-1):
                     #x_rand = RRT.sample_state(self, grid)
                    
-                    goal_path () = rrt (range(num_vertices) - i)                                    
-                    x_near = goal_path (i)
-
-                    
-                    
-                    
+                    #goal_path (i) = rrt (range(num_vertices) - i)                                    
+                                        
                     # sample states until a free state is found
                     while grid[int(x_goal[0]), int(x_goal[1])] == 1:
-                        x_goal = RRT.sample_state(self, grid)
+                        rrt_path = RRT.sample_state(self, grid)
                     
-                    x_near = RRT.nearest_neighbor(self, x_goal, rrt)
-                    u = RRT.select_input(self, x_goal, x_near)
+                    x_near = RRT.nearest_neighbor(self, rrt_path, rrt)
+                    u = RRT.select_input(self, rrt_path, x_near)
                     x_new = RRT.new_state(self, x_near, u, dt)
 
-                    norm_g = np.array(x_goal)
+                    norm_rrtp = np.array(rrt_path)
                     norm_n = np.array(x_near)
                      
-                    print (norm_g, norm_n)
-                    print ("goal path ", np.linalg.norm(norm_g - norm_n))
+                    print (norm_rrtp, norm_n)
+                    print ("goal path ", np.linalg.norm(norm_rrtp - norm_n))
                 
                 if grid[int(x_new[0]), int(x_new[1])] == 0:
                 
                     # rrt.add_edge(x_near, x_new, u)
-                    goal_path.add_edge(x_near, x_new, u)
+                    rrt_path.add_edge(x_near, x_new, u)
                      
                     #self.rrt_goal = round(x_near[0],[1])      
                     
                     
-                    return rrt  #  d, theta, self.rrt_goal
+                    return rrt, rrt_path  #  d, theta, self.rrt_goal
                 
                     """ :::: def calc_distance_and_angle(from_node, to_node):
                         dx = to_node.x - from_node.x
