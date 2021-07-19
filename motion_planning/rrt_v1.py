@@ -71,9 +71,8 @@ plt.rcParams['figure.figsize'] = 12, 12
 
 class RRT:
 
-    x_goal = [30, 750]
-    goal_path = (30, 750)
-    rrt_path = ()
+    x_goal = (30, 750)
+    rrt_goal = ()
     num_vertices = 1600
     dt = 18
     x_init = (20, 150)
@@ -157,7 +156,7 @@ class RRT:
     def nearest_neighbor(self, x_rand, rrt):
         
                
-        #wp_radius = np.linalg.norm(goal_path)
+        #wp_radius = np.linalg.norm(x_goal)
         #print ('waypoint radius', wp_radius)
     
         closest_dist = 100000
@@ -172,7 +171,7 @@ class RRT:
                 closest_dist = d
                 closest_vertex = v
             '''
-            if np.linalg.norm(goal_path - np.array(v[:2])) < 1.0:
+            if np.linalg.norm(x_goal - np.array(v[:2])) < 1.0:
                 print("Found Goal")    
                 sys.exit('Found Goal')
             '''
@@ -210,17 +209,19 @@ class RRT:
 
     def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
+        
         x_goal = [30, 750]
         
-
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
-        
+        #rrt = self.rrt
 
-        for _ in range(num_vertices):         
+        for _ in range(num_vertices):
+
+           
+            
             x_rand = RRT.sample_state(self, grid)
             # sample states until a free state is found
-            
             while grid[int(x_rand[0]), int(x_rand[1])] == 1:
                 x_rand = RRT.sample_state(self, grid)
                                   
@@ -236,83 +237,22 @@ class RRT:
             print (norm_g, norm_n)
             print (np.linalg.norm(norm_g - norm_n))
 
-           
-           
-            """
             if np.linalg.norm(norm_g - norm_n) < 200:
-                print ("Goal Found.")
+                # goal_path = rrt
                 
-                rrt_path = RRT(x_init)
-                num_v = range(num_vertices)                     
-                x_start = (RRT.x_init[0], RRT.x_init[1])
+                self.Goal_Path(self, grid, rrt)
 
-                print ("x_rand", x_rand)
-
-                
-                # index from goal to start
-                for i in range(num_vertices,0,-1):
-                
-                #x_rand = RRT.sample_state(self, grid)
-                
-                #goal_path (i) = rrt (range(num_vertices) - i)                                    
-                                    
-                # sample states until a free state is found
-               
-                    while grid[int(x_goal[0]), int(x_goal[1])] == 1:
-                        rrt_path = RRT.sample_state(self, grid)
-                    
-                    x_near = RRT.nearest_neighbor(self, rrt_path, rrt)
-                    u = RRT.select_input(self, rrt_path, x_near)
-                    x_new = RRT.new_state(self, x_near, u, dt)
-                
-                    
-
-
-                
-
-                norm_rrtp = np.array(rrt_path)
-                norm_n = np.array(x_near)
-                    
-                print (norm_rrtp, norm_n)
-                print ("rrt_path ", np.linalg.norm(norm_rrtp - norm_n))
-                print ("rrt_path", rrt_path)
-                
-                
-                if grid[int(x_new[0]), int(x_new[1])] == 0:
-                
-                    # rrt.add_edge(x_near, x_new, u)
-                    rrt_path.add_edge(x_near, x_new, u)
-                     
-                    #self.rrt_goal = round(x_near[0],[1])      
-                    
-                    
-                    return rrt, rrt_path  #  d, theta, self.rrt_goal 
-                    
-                return rrt
-                """        
-                """ :::: def calc_distance_and_angle(from_node, to_node):
-                    dx = to_node.x - from_node.x
-                    dy = to_node.y - from_node.y
-                    d = math.hypot(dx, dy)
-                    theta = math.atan2(dy, dx)
-                    # return d, theta """
-               
-            if grid[int(x_new[0]), int(x_new[1])] == 0:
+            elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
             
-        # Draw final path
         
-        rrt.draw_graph()
-        plt.plot([x for (x, y) in rrt], [y for (x, y) in rrt], '-r')
-        plt.grid(True)
-        # plt.pause(0.01)  # Need for Mac
-        plt.show()
-       
-        print ("RRT Path Mapped.  A new search required to find goal.")
+        print ("RRT Path Mapped")
 
-        return rrt 
+        return rrt, rrt_path, v_near, x_near # goal_path 
+
+    
                     
 class States(Enum):
     MANUAL = auto()
@@ -460,28 +400,28 @@ class MotionPlanning(Drone):
         # TODO (if you're feeling ambitious): Try a different approach altogether!
         
         rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-        # goal_path = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
+
+        found_goal = 1
+        if found_goal == 1:
+            rrt_path = rrt
+            self.Goal_Path(self, grid, rrt_path)
+            
 
         # Now let's plot the generated RRT.
 
         #sys.exit('generating waypoints')
-        plt.imshow(grid, cmap='Greys', origin='lower')
+        """ plt.imshow(grid, cmap='Greys', origin='lower')
         plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
         plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
-        #plt.plot(RRT.rrt_path[1], RRT.rrt_path[0], 'ro')
-
        
-        print ("goal_path", RRT.rrt_path)   
+        print ("rrt goal", RRT.rrt_goal)   
         #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
 
-        """ for (v1, v2) in rrt.edges:
-            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-') """
-
-        for (v1, v2) in RRT.rrt_path.edges:
-            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'ro')   
+        for (v1, v2) in rrt.edges:
+            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
         
         plt.show(block=True)
-        
+         """
         
         #sys.exit('generating waypoints')
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
@@ -492,6 +432,86 @@ class MotionPlanning(Drone):
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
+        return rrt
+
+
+    
+    def Goal_Path(self, grid, rrt, rrt_path):       
+        print ("Goal Found.")
+
+        #rrt_path = np.array(rrt_path)
+
+        #goal_path = rrt
+        found_goal = 1
+        if found_goal == 1: 
+            """ for gp in rrt:
+                print ("Goal Path", rrt, gp)
+                found_goal = 0
+            #for i in range(num_vertices,0,-1):
+            #    print ("goal path", gp)  """   
+            
+            plt.imshow(grid, cmap='Greys', origin='lower')
+            
+            # Memoization for edges to generate rrt path from goal to start point.
+            
+            for (g1, g2) in range(rrt.edges,0,-1):
+
+                print ("Goal Path", rrt_path[g1, g2])
+                found_goal = 0
+                rrt_path[g1, g2] = rrt.edges[g1, g2]
+                plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
+        
+        plt.show(block=True)        
+        sys.exit('Found goal')
+
+        print ('Generating Path...')
+        
+
+
+        """
+        x_rand = RRT.sample_state(self, grid)
+        goal_path = RRT.nearest_neighbor(self, x_rand, rrt)
+        
+        
+    
+        # index from goal to start
+    
+        
+                        
+            x_rand = RRT.sample_state(self, grid)
+            # sample states until a free state is found
+            while grid[int(x_rand[0]), int(x_rand[1])] == 1:
+                x_rand = RRT.sample_state(self, grid)
+                                
+            x_near = RRT.nearest_neighbor(self, x_rand, rrt)
+            u = RRT.select_input(self, x_rand, x_near)
+            x_new = RRT.new_state(self, x_near, u, dt)
+            
+        
+            v_near = np.array([30, 750])
+            norm_g = np.array(x_goal)
+            norm_n = np.array(x_near)
+            #norm_n = np.array(v_near)
+            
+            print (norm_g, norm_n)
+            print (np.linalg.norm(norm_g - norm_n))
+
+            if np.linalg.norm(norm_g - norm_n) < 200:
+                rrt.add_edge(x_near, x_new, u)
+                
+                #self.rrt_goal = round(x_near[0],[1])      
+                print ("Goal Found.")
+                return rrt #, self.rrt_goal
+
+            elif grid[int(x_new[0]), int(x_new[1])] == 0:
+                # the orientation `u` will be added as metadata to
+                # the edge
+                rrt.add_edge(x_near, x_new, u) """
+            
+        
+        print ("RRT Path Mapped")
+
+        return rrt, rrt_path
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
