@@ -239,7 +239,8 @@ class RRT:
 
             if np.linalg.norm(norm_g - norm_n) < 200:
                 # goal_path = rrt
-                RRT.Goal_Path(self, grid, rrt, num_vertices)
+                
+                self.Goal_Path(self, grid, rrt)
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
@@ -249,7 +250,7 @@ class RRT:
         
         print ("RRT Path Mapped")
 
-        return rrt, v_near, x_near # goal_path 
+        return rrt, rrt_path, v_near, x_near # goal_path 
 
     
                     
@@ -399,14 +400,17 @@ class MotionPlanning(Drone):
         # TODO (if you're feeling ambitious): Try a different approach altogether!
         
         rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-      
-        
-    
+
+        found_goal = 1
+        if found_goal == 1:
+            rrt_path = rrt
+            self.Goal_Path(self, grid, rrt_path)
+            
 
         # Now let's plot the generated RRT.
 
         #sys.exit('generating waypoints')
-        plt.imshow(grid, cmap='Greys', origin='lower')
+        """ plt.imshow(grid, cmap='Greys', origin='lower')
         plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
         plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
        
@@ -417,7 +421,7 @@ class MotionPlanning(Drone):
             plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
         
         plt.show(block=True)
-        
+         """
         
         #sys.exit('generating waypoints')
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
@@ -428,17 +432,20 @@ class MotionPlanning(Drone):
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
+        return rrt
 
-    def Goal_Path(self, grid, rrt):
-    
-    
 
+    
+    def Goal_Path(self, grid, rrt, rrt_path):       
         print ("Goal Found.")
+
+        #rrt_path = np.array(rrt_path)
+
         #goal_path = rrt
         found_goal = 1
         if found_goal == 1: 
-            #for gp in rrt:
-            #    print ("Goal Path", rrt, gp)
+            for gp in rrt:
+                print ("Goal Path", rrt, gp)
             
             #for i in range(num_vertices,0,-1):
             #    print ("goal path", gp)    
@@ -446,7 +453,7 @@ class MotionPlanning(Drone):
             plt.imshow(grid, cmap='Greys', origin='lower')
             
             for (g1, g2) in rrt.edges:
-                np.array(goal_path[g1, g2]) = rrt.edges[g1, g2]
+                rrt_path[g1, g2] = rrt.edges[g1, g2]
                 plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
         
         plt.show(block=True)        

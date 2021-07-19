@@ -71,8 +71,9 @@ plt.rcParams['figure.figsize'] = 12, 12
 
 class RRT:
 
+    x_goal = [30, 750]
     goal_path = (30, 750)
-    rrt_goal = ()
+    rrt_path = ()
     num_vertices = 1600
     dt = 18
     x_init = (20, 150)
@@ -209,8 +210,8 @@ class RRT:
 
     def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
-        
         x_goal = [30, 750]
+        
 
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
@@ -235,33 +236,47 @@ class RRT:
             print (norm_g, norm_n)
             print (np.linalg.norm(norm_g - norm_n))
 
-            # Path from to start to goal:
-
+           
+           
+            """
             if np.linalg.norm(norm_g - norm_n) < 200:
                 print ("Goal Found.")
                 
-                goal_path = RRT(x_init)
+                rrt_path = RRT(x_init)
                 num_v = range(num_vertices)                     
                 x_start = (RRT.x_init[0], RRT.x_init[1])
 
+                print ("x_rand", x_rand)
+
+                
+                # index from goal to start
                 for i in range(num_vertices,0,-1):
-                    #x_rand = RRT.sample_state(self, grid)
-                   
-                    #goal_path (i) = rrt (range(num_vertices) - i)                                    
-                                        
-                    # sample states until a free state is found
+                
+                #x_rand = RRT.sample_state(self, grid)
+                
+                #goal_path (i) = rrt (range(num_vertices) - i)                                    
+                                    
+                # sample states until a free state is found
+               
                     while grid[int(x_goal[0]), int(x_goal[1])] == 1:
                         rrt_path = RRT.sample_state(self, grid)
                     
                     x_near = RRT.nearest_neighbor(self, rrt_path, rrt)
                     u = RRT.select_input(self, rrt_path, x_near)
                     x_new = RRT.new_state(self, x_near, u, dt)
+                
+                    
 
-                    norm_rrtp = np.array(rrt_path)
-                    norm_n = np.array(x_near)
-                     
-                    print (norm_rrtp, norm_n)
-                    print ("goal path ", np.linalg.norm(norm_rrtp - norm_n))
+
+                
+
+                norm_rrtp = np.array(rrt_path)
+                norm_n = np.array(x_near)
+                    
+                print (norm_rrtp, norm_n)
+                print ("rrt_path ", np.linalg.norm(norm_rrtp - norm_n))
+                print ("rrt_path", rrt_path)
+                
                 
                 if grid[int(x_new[0]), int(x_new[1])] == 0:
                 
@@ -271,27 +286,29 @@ class RRT:
                     #self.rrt_goal = round(x_near[0],[1])      
                     
                     
-                    return rrt, rrt_path  #  d, theta, self.rrt_goal
-                
-                    """ :::: def calc_distance_and_angle(from_node, to_node):
-                        dx = to_node.x - from_node.x
-                        dy = to_node.y - from_node.y
-                        d = math.hypot(dx, dy)
-                        theta = math.atan2(dy, dx)
-                        # return d, theta """
+                    return rrt, rrt_path  #  d, theta, self.rrt_goal 
+                    
+                return rrt
+                """        
+                """ :::: def calc_distance_and_angle(from_node, to_node):
+                    dx = to_node.x - from_node.x
+                    dy = to_node.y - from_node.y
+                    d = math.hypot(dx, dy)
+                    theta = math.atan2(dy, dx)
+                    # return d, theta """
                
-            elif grid[int(x_new[0]), int(x_new[1])] == 0:
+            if grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
             
-        """ # Draw final path
+        # Draw final path
         
         rrt.draw_graph()
         plt.plot([x for (x, y) in rrt], [y for (x, y) in rrt], '-r')
         plt.grid(True)
         # plt.pause(0.01)  # Need for Mac
-        plt.show() """
+        plt.show()
        
         print ("RRT Path Mapped.  A new search required to find goal.")
 
@@ -450,15 +467,17 @@ class MotionPlanning(Drone):
         #sys.exit('generating waypoints')
         plt.imshow(grid, cmap='Greys', origin='lower')
         plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
-        plt.plot(RRT.goal_path[1], RRT.goal_path[0], 'ro')
+        plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+        #plt.plot(RRT.rrt_path[1], RRT.rrt_path[0], 'ro')
+
        
-        print ("goal_path", RRT.goal_path)   
+        print ("goal_path", RRT.rrt_path)   
         #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
 
         """ for (v1, v2) in rrt.edges:
             plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-') """
 
-        for (v1, v2) in goal_path.edges:
+        for (v1, v2) in RRT.rrt_path.edges:
             plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'ro')   
         
         plt.show(block=True)
