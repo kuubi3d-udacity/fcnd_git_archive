@@ -63,9 +63,9 @@ import math
 from collections import Counter
 
 get_ipython().run_line_magic('matplotlib', 'inline')
-plt.switch_backend('Qt5agg')
+""" plt.switch_backend('Qt5agg')
 
-plt.rcParams['figure.figsize'] = 12, 12
+plt.rcParams['figure.figsize'] = 12, 12 """
 
 
 
@@ -250,7 +250,7 @@ class RRT:
         
         print ("RRT Path Mapped")
 
-        return rrt, rrt_path, v_near, x_near # goal_path 
+        return rrt, v_near, x_near # goal_path 
 
     
                     
@@ -450,18 +450,24 @@ class MotionPlanning(Drone):
             #for i in range(num_vertices,0,-1):
             #    print ("goal path", gp)  """   
             
-            plt.imshow(grid, cmap='Greys', origin='lower')
+            #plt.imshow(grid, cmap='Greys', origin='lower')
             
             # Memoization for edges to generate rrt path from goal to start point.
             
-            for (g1, g2) in range(rrt.edges,0,-1):
+            g1 = 0
+            g2 = 0
+            edg_rrt = RRT.num_vertices
+            print("verticies", edg_rrt)
 
-                print ("Goal Path", rrt_path[g1, g2])
+            
+            for (g1, g2) in range(edg_rrt,0,-1):
+
+                print ("Goal Path", RRT.edges[g1, g2])
                 found_goal = 0
-                rrt_path[g1, g2] = rrt.edges[g1, g2]
+                #rrt_path[g1, g2] = RRT.edges[g1, g2]
                 plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
         
-        plt.show(block=True)        
+        #plt.show(block=True)        
         sys.exit('Found goal')
 
         print ('Generating Path...')
