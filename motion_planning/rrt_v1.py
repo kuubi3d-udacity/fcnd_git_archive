@@ -456,7 +456,10 @@ class MotionPlanning(Drone):
             
             g1 = 0
             g2 = 0
+            x_start = []
             edg_rrt = RRT.num_vertices
+
+           
             print("verticies", edg_rrt)
 
             
@@ -465,6 +468,8 @@ class MotionPlanning(Drone):
                 print ("Goal Path", RRT.edges[g1, g2])
                 found_goal = 0
                 #rrt_path[g1, g2] = RRT.edges[g1, g2]
+                if  RRT.generate_RRT.x_near[g1, g2]  < RRT.edges[g1, g2]:
+                    RRT.add_edge.(x_near, x_new, u) = RRT.edges[g1, g2]
                 plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
         
         #plt.show(block=True)        
