@@ -214,6 +214,7 @@ class RRT:
         
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
+        #rrt_path = RRT(x_init)
         #rrt = self.rrt
 
         for _ in range(num_vertices):
@@ -239,14 +240,14 @@ class RRT:
 
             if np.linalg.norm(norm_g - norm_n) < 200:
                 # goal_path = rrt
-                
-                self.Goal_Path(self, grid, rrt)
+                rrt_path = rrt
+                self.Goal_Path(self, grid, rrt, rrt_path,x_near, x_new, u)
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-            
+                rrt.add_edge(x_near, x_new, u) #= RRT.edges[g1, g2]
         
         print ("RRT Path Mapped")
 
@@ -435,7 +436,7 @@ class MotionPlanning(Drone):
         return rrt
 
 
-    
+    #:::: working
     def Goal_Path(self, grid, rrt, rrt_path):       
         print ("Goal Found.")
 
@@ -444,7 +445,32 @@ class MotionPlanning(Drone):
         #goal_path = rrt
         found_goal = 1
         if found_goal == 1: 
-            """ for gp in rrt:
+            for gp in rrt:
+                print ("Goal Path", rrt, gp)
+            
+            #for i in range(num_vertices,0,-1):
+            #    print ("goal path", gp)    
+            
+            plt.imshow(grid, cmap='Greys', origin='lower')
+            
+            for (g1, g2) in rrt.edges:
+                rrt_path[g1, g2] = rrt.edges[g1, g2]
+                plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
+        
+        plt.show(block=True)        
+        sys.exit('Found goal')
+
+        print ('Generating Path...')
+""" 
+    def Goal_Path(self, grid, rrt, rrt_path,x_near, x_new, u):       
+        print ("Goal Found.")
+
+        #rrt_path = np.array(rrt_path)
+
+        #goal_path = rrt
+        found_goal = 1
+        if found_goal == 1: 
+                for gp in rrt:
                 print ("Goal Path", rrt, gp)
                 found_goal = 0
             #for i in range(num_vertices,0,-1):
@@ -458,8 +484,11 @@ class MotionPlanning(Drone):
             g2 = 0
             x_start = []
             edg_rrt = RRT.num_vertices
-
-           
+            
+            rrt = RRT(RRT.x_init)
+            rrt_path = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
+            edg_rrt = RRT.edges[g1, g2]
+            rrt.add_edge(x_near, x_new, u)
             print("verticies", edg_rrt)
 
             
@@ -469,14 +498,14 @@ class MotionPlanning(Drone):
                 found_goal = 0
                 #rrt_path[g1, g2] = RRT.edges[g1, g2]
                 if  RRT.generate_RRT.x_near[g1, g2]  < RRT.edges[g1, g2]:
-                    RRT.add_edge.(x_near, x_new, u) = RRT.edges[g1, g2]
-                plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
+                    rrt_path[g1,] = RRT.edges[g1, g2]
+                    plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
         
         #plt.show(block=True)        
         sys.exit('Found goal')
 
         print ('Generating Path...')
-        
+"""
 
 
         """
