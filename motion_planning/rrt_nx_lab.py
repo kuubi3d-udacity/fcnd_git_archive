@@ -184,9 +184,9 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 #plt.show(block=True)
 
 # Now let's plot the generated RRT.
+#sys.exit('generating waypoints')
 
-    #sys.exit('generating waypoints')
-    """ plt.imshow(grid, cmap='Greys', origin='lower')
+""" plt.imshow(grid, cmap='Greys', origin='lower')
     plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
     plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
     
@@ -197,6 +197,6 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
         plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
     
     plt.show(block=True)
-        """
+"""
 
 

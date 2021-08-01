@@ -108,10 +108,10 @@ class RRT:
             self.graph()
     
     def graph(self, weight, G):
-        self.tree.add_edge("A", "B", weight-4)
-        self.tree.add_edge("B", "D", weight-4)
-        self.tree.add_edge("A", "C", weight-4)
-        self.tree.add_edge("C", "D", weight-4)
+        self.tree.add_edge("A", "B", weight=4)
+        self.tree.add_edge("B", "D", weight=4)
+        self.tree.add_edge("A", "C", weight=4)
+        self.tree.add_edge("C", "D", weight=4)
 
         nx.shortest_path(G, "A", "D", weight="weight")
         ['A', 'B', 'D']
@@ -124,5 +124,6 @@ class RRT:
         nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 
         print ("pos")
+        plt.show(block=True)    
             
         
