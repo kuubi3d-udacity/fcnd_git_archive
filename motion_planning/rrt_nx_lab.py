@@ -62,11 +62,11 @@ from queue import PriorityQueue
 import math
 from collections import Counter
 
-""" get_ipython().run_line_magic('matplotlib', 'inline')
+get_ipython().run_line_magic('matplotlib', 'inline')
 plt.switch_backend('Qt5agg')
 
 plt.rcParams['figure.figsize'] = 12, 12
- """
+
 
 
 """ class RRT:
@@ -118,10 +118,37 @@ plt.rcParams['figure.figsize'] = 12, 12
         labels = nx.get_node_attributes(self.tree, "weight")
         nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
 """
- 
+
+
+
+
+
+
+
+# matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as plt
+from sklearn.neighbors import KDTree
+import networkx as nx
+from IPython import get_ipython
+import time
+
+#from enum import Enum
+from queue import PriorityQueue
+
+import math
+from collections import Counter
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.switch_backend('Qt5agg')
+
+plt.rcParams['figure.figsize'] = 12, 12
+
+
+
+
  
 import networkx as nx
-G = nx.DiGraph()
+G = nx.Graph()
 
 pos = nx.circular_layout(G)
 #weights = [wt for u, v, wt in G.edges(data="weight")]
@@ -142,13 +169,34 @@ G.add_edge("C", "D", weight=4)
 nx.shortest_path(G, "A", "D", weight="weight")
 ['A', 'B', 'D']
 
+plt.imshow(G, cmap='Greys', origin='lower')
+
 pos = nx.circular_layout(G)
 weights = [wt for u, v, wt in G.edges(data="weight")]
 nx.draw_networkx(G, pos, width=weights)
+plt.plot(G, pos, width=weights)
+
+
 
 labels = nx.get_node_attributes(G, "weight")
 nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+#plt.plot(G, pos, edge_labels=labels)
+#plt.show(block=True)
 
+# Now let's plot the generated RRT.
 
+    #sys.exit('generating waypoints')
+    """ plt.imshow(grid, cmap='Greys', origin='lower')
+    plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+    plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+    
+    print ("rrt goal", RRT.rrt_goal)   
+    #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
+
+    for (v1, v2) in rrt.edges:
+        plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+    
+    plt.show(block=True)
+        """
 
 
