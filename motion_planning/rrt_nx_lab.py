@@ -69,7 +69,8 @@ plt.rcParams['figure.figsize'] = 12, 12
 
 
 
-""" class RRT:
+class RRT:
+    """
     def __init__(self, x_init):
         # A tree is a special case of a graph with
         # directed edges and only one path to any vertex.
@@ -91,11 +92,11 @@ plt.rcParams['figure.figsize'] = 12, 12
         return self.tree.edges()
 
     def create_grid(self, data, drone_altitude, safety_distance):
-        """
-        Returns a grid representation of a 2D configuration space
-        based on given obstacle data, drone altitude and safety distance
-        arguments.
-        """
+        
+        //Returns a grid representation of a 2D configuration space
+        //based on given obstacle data, drone altitude and safety distance
+        //arguments.
+           
 
     def __init__(self, x_init, weight, G):
         # A tree is a special case of a graph with
@@ -117,7 +118,7 @@ plt.rcParams['figure.figsize'] = 12, 12
 
         labels = nx.get_node_attributes(self.tree, "weight")
         nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-"""
+    """
 
 
 
@@ -148,7 +149,9 @@ plt.rcParams['figure.figsize'] = 12, 12
 
  
 import networkx as nx
-G = nx.Graph()
+
+
+G = nx.DiGraph()
 
 pos = nx.circular_layout(G)
 #weights = [wt for u, v, wt in G.edges(data="weight")]
@@ -166,37 +169,76 @@ G.add_edge("B", "D", weight=2)
 G.add_edge("A", "C", weight=3)
 G.add_edge("C", "D", weight=4)
 
-nx.shortest_path(G, "A", "D", weight="weight")
-['A', 'B', 'D']
+nx.shortest_path(G, "A", "D", weight="weights")
+#['A', 'B', 'D']
 
-plt.imshow(G, cmap='Greys', origin='lower')
+
+#plt.imshow(G, cmap='Greys', origin='lower')
 
 pos = nx.circular_layout(G)
 weights = [wt for u, v, wt in G.edges(data="weight")]
-nx.draw_networkx(G, pos, width=weights)
-plt.plot(G, pos, width=weights)
-
+nx.draw_networkx(G, pos, width=weights)#
+#plt.plot(G, pos, width=weights)
 
 
 labels = nx.get_node_attributes(G, "weight")
-nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+
+nx.draw(G)
+plt.show(block=True)
+
+#nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
+
+"""
 #plt.plot(G, pos, edge_labels=labels)
 #plt.show(block=True)
 
 # Now let's plot the generated RRT.
 #sys.exit('generating waypoints')
 
-""" plt.imshow(grid, cmap='Greys', origin='lower')
-    plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
-    plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
-    
-    print ("rrt goal", RRT.rrt_goal)   
-    #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
+plt.imshow(grid, cmap='Greys', origin='lower')
+plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
 
-    for (v1, v2) in rrt.edges:
-        plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
-    
-    plt.show(block=True)
+print ("rrt goal", RRT.rrt_goal)   
+#plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
+
+for (v1, v2) in rrt.edges:
+    plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+
+plt.show(block=True)
+
+
+
+
+
+import networkx as nx
+G = nx.Graph()
+G.add_edge(1, 2) # default edge data=1
+G.add_edge(2, 3, weight=0.9) # specify edge data
+
+import math
+G.add_edge('y', 'x', function=math.cos)
+G.add_node(math.cos) # any hashable can be a node
+
+
+elist = [(1, 2), (2, 3), (1, 4), (4, 2)]
+G.add_edges_from(elist)
+elist = [('a', 'b', 5.0), ('b', 'c', 3.0), ('a', 'c', 1.0), ('c', 'd', 7.3)]
+G.add_weighted_edges_from(elist) 
+
+
+
+
+G = nx.Graph()
+e = [('a', 'b', 0.3), ('b', 'c', 0.9), ('a', 'c', 0.5), ('c', 'd', 1.2)]
+G.add_weighted_edges_from(e)
+print(nx.dijkstra_path(G, 'a', 'd'))
+['a', 'c', 'd']
+
+plt.figure(figsize=(8, 6))
+nx.draw(G)
+#nx.draw(g, pos=node_positions, edge_color=edge_colors, node_size=10, node_color='black')
+plt.title('Graph Representation of Sleeping Giant Trail Map', size=15)
+plt.show()
+
 """
-
-
