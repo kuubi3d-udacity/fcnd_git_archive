@@ -445,7 +445,7 @@ class MotionPlanning(Drone):
         found_goal = 1
         if found_goal == 1: 
             for gp in rrt:
-                print ("Goal Path", rrt, gp)
+                print ("Goal Path", rrt, gp)   
             
             #for i in range(num_vertices,0,-1):
             #    print ("goal path", gp)    
