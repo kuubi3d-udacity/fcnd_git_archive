@@ -104,10 +104,10 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.tree.add_edge("A", "B", weight - 4)
-        self.tree.add_edge("B", "D", weight - 4)
-        self.tree.add_edge("A", "C", weight - 4)
-        self.tree.add_edge("C", "D", weight - 4)
+        self.tree.add_edge("A", "B", weight = 4)
+        self.tree.add_edge("B", "D", weight = 4)
+        self.tree.add_edge("A", "C", weight = 4)
+        self.tree.add_edge("C", "D", weight = 4)
 
         nx.shortest_path(G, "A", "D", weight="weight")
         ['A', 'B', 'D']
@@ -183,7 +183,7 @@ nx.draw_networkx(G, pos, width=weights)#
 
 labels = nx.get_node_attributes(G, "weight")
 
-nx.draw(G)
+#nx.draw(G)
 plt.show(block=True)
 
 #nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
