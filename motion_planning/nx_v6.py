@@ -266,7 +266,7 @@ class States(Enum):
     TAKEOFF = auto()
     WAYPOINT = auto()
     LANDING = auto()
-    DISARMING = auto()
+    DISARMING = auto() 
     PLANNING = auto()
 
 
