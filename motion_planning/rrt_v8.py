@@ -1,3 +1,24 @@
+import sys
+
+import argparse
+import time
+import msgpack
+from enum import Enum, auto
+
+import numpy as np
+import decimal
+
+
+# This file is subject to the terms and conditions defined in
+# file 'LICENSE', which is part of this source code package.
+
+from operator import itemgetter
+from planning_utils import a_star, heuristic, create_grid
+from udacidrone import Drone
+from udacidrone.connection import MavlinkConnection
+from udacidrone.messaging import MsgID
+from udacidrone.frame_utils import global_to_local
+
 # coding: utf-8
 
 # # Rapidly-Exploring Random Tree (RRT)
@@ -37,6 +58,9 @@ import time
 from enum import Enum
 from queue import PriorityQueue
 
+import math
+from collections import Counter
+
 get_ipython().run_line_magic('matplotlib', 'inline')
 plt.switch_backend('Qt5agg')
 
@@ -60,10 +84,10 @@ class RRT:
         self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
 
     def add_rrt_vertex(self, x_new):
-        self.tree.add_node(tuple(x_init))
+        self.rrt_path.add_node(tuple(x_init))
     
     def add_rrt_edge(self, x_near, x_new, u):
-        self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
         
     @property
     def vertices(self):
@@ -72,9 +96,18 @@ class RRT:
     @property
     def edges(self):
         return self.tree.edges()
+
+    @property
+    def vertices(self):
+        return self.rrt_path.nodes()
+    
+    @property
+    def edges(self):
+        return self.rrt_path.edges()
                                                   
 
-'''def create_grid():
+'''
+def create_grid():
     grid = np.zeros((100, 100))
     # build some obstacles
     grid[10:20, 10:20] = 1
@@ -85,8 +118,8 @@ class RRT:
     grid[80:90, 80:90] = 1
     grid[75:90, 80:90] = 1
     grid[30:40, 60:82] = 1
-    return grid'''
-
+    return grid
+'''
 
 def create_grid(data, drone_altitude, safety_distance):
     """
@@ -179,7 +212,7 @@ def sample_state(grid):
 # 
 # A critical part of the RRT procedure is finding the closest vertex to the sampled random point. This the most computationally intensive part so be mindful of that. Depending on the number of vertices a naive implementation will run into trouble quickly.
 
-
+x_goal = (30, 750)
 def nearest_neighbor(x_rand, rrt):
     
     #x_goal = (30, 750)
@@ -228,10 +261,11 @@ def new_state(x_near, u, dt):
 # Awesome! Now we'll put everything together and generate an RRT.
 
 
-def generate_RRT(grid, x_init, num_vertices, dt,):
+def generate_RRT(grid, x_init, num_vertices, dt):
     
     rrt = RRT(x_init)
-    
+    rrt_path = RRT(x_init)
+    x_goal = (30, 750)
     
     for _ in range(num_vertices):
         
@@ -244,47 +278,76 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
         u = select_input(x_rand, x_near)
         x_new = new_state(x_near, u, dt)
             
-        if grid[int(x_new[0]), int(x_new[1])] == 0:
+        v_near = np.array([30, 750])
+        norm_g = np.array(x_goal)
+        norm_n = np.array(x_near)
+        #norm_n = np.array(v_near)
+        
+        print (norm_g, norm_n)
+        print (np.linalg.norm(norm_g - norm_n))
+
+        if np.linalg.norm(norm_g - norm_n) < 200:
+            # goal_path = rrt
+            rrt_path = rrt
+            #nx.draw_networkx(rrt_path)
+            plt.show(block=True)
+            
+            # Memoize weights
+            g_near = x_near
+            cost = 1     #np.linalg.norm(x_goal - x_near)
+            rrt_path.add_edge(g_near, u, cost)
+            
+            sys.exit('RRT Memoization...')
+                
+                
+           
+
+        elif grid[int(x_new[0]), int(x_new[1])] == 0:
             # the orientation `u` will be added as metadata to
             # the edge
             rrt.add_edge(x_near, x_new, u)
 
-            # Memoize weights
-    return x_new        
-            
-def goal_path(grid, gp_init, num_vertices, dt,):
+          
+
     
+        
+"""
+
+def goal_path(grid, gp_init, num_vertices, dt,):
+   
     rrt_path = RRT(gp_init)
-    cost = np.linalg.norm(x_goal - x_new
-    rrt_path.add_edge(x_near, x_new, u, cost)
+    cost = np.linalg.norm(x_goal - )
+    rrt_path.add_edge(g_near, x_near=, u, cost)
 
 
 
+    # ~ arrive at goal    
+    
+    else:   
+        #queue = PriorityQueue()
+        #queue.put((0, start))
+        #visited = set(start)
 
-        # ~ arrive at goal    
-        '''else:   
-            #queue = PriorityQueue()
-            #queue.put((0, start))
-            #visited = set(start)
+        #branch = {}
+        found = False
 
-            #branch = {}
-            found = False
+    while not queue.empty():
+        item = queue.get()
+        current_node = item[1]
+        if current_node == start:
+            current_cost = 0.0
+        else:              
+            current_cost = branch[current_node][0]
+    
+    if current_node == goal:        
+        print('Found a path.')
+        found = True
+        break
 
-            while not queue.empty():
-                item = queue.get()
-                current_node = item[1]
-                if current_node == start:
-                    current_cost = 0.0
-                else:              
-                    current_cost = branch[current_node][0]'''
-                    
-        '''if current_node == goal:        
-            print('Found a path.')
-            found = True
-            break'''
-        #else:    
-    return rrt, rrt_path
-
+    
+    #else:    
+   
+"""
 # Feel free to change any of the values below.
 
 x_goal = (30, 750)
@@ -293,8 +356,9 @@ dt = 18
 x_init = (20, 150)
 
 rrt = generate_RRT(grid, x_init, num_vertices, dt)
-
+rrt_path = generate_RRT(grid, x_init, num_vertices, dt)
 # Now let's plot the generated RRT.
+
 """
  def generate_final_course(self, goal_ind):
     path = [[self.end.x, self.end.y]]
@@ -304,7 +368,6 @@ rrt = generate_RRT(grid, x_init, num_vertices, dt)
         node = node.parent
     path.append([node.x, node.y]) 
 """
-
 
 plt.imshow(grid, cmap='Greys', origin='lower')
 plt.plot(x_init[1], x_init[0], 'ro')
@@ -320,7 +383,7 @@ for (v1, v2) in rrt_path.edges:
     #rrt_path = RRT.edges[g1, g2]
     #plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
 
-nx.draw_networkx(rrt.tree)
+#nx.draw_networkx(rrt_path.tree)
 
 plt.show(block=True)
 

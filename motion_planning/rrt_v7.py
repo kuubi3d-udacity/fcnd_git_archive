@@ -55,6 +55,12 @@ class RRT:
     
     def add_edge(self, x_near, x_new, u):
         self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+
+    def add_rrt_vertex(self, g_new):
+        self.tree.add_node(tuple(x_init))
+    
+    def add_rrt_edge(self, x_near, x_new, u):
+        self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
         
     @property
     def vertices(self):
@@ -63,6 +69,8 @@ class RRT:
     @property
     def edges(self):
         return self.tree.edges()
+
+    
                                                   
 
 '''def create_grid():
