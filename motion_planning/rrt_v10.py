@@ -266,6 +266,10 @@ def new_state(x_near, u, dt):
 # Awesome! Now we'll put everything together and generate an RRT.
 
 x_goal = (30, 750)
+num_vertices = 1600
+dt = 18
+x_init = (20, 150)
+
 
 def generate_RRT(grid, x_init, num_vertices, dt,):
     
@@ -285,27 +289,25 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
         if grid[int(x_new[0]), int(x_new[1])] == 0:
             #the orientation `u` will be added as metadata to
             #the edge
-            #v_near = np.array([30, 750])
-            #norm_g = np.array(x_goal)
-            #norm_n = np.array(x_near)
-            #norm_n = np.array(v_near)
+            v_near = np.array([30, 750])
+            norm_g = np.array(x_goal)
+            norm_n = np.array(x_near)
+            norm_n = np.array(v_near)
             
             #print (norm_g, norm_n)
             #print (np.linalg.norm(norm_g - norm_n))
 
         
-            #if np.linalg.norm(norm_g - norm_n) < 200:
-                # goal_path = rrt
-                #rrt_path = rrt
-                #nx.draw_networkx(rrt_path)
+            if np.linalg.norm(norm_g - norm_n) < 200:
+                goal_path = rrt
+                rrt_path = rrt
+                nx.draw_networkx(rrt_path)
 
                 #show_graph()
                 #plt.show(block=True)
                
-                """ 
-                num_vertices = 1600
-                dt = 18
-                x_init = (20, 150)
+                 
+                
 
                 rrt = generate_RRT(grid, x_init, num_vertices, dt)
 
@@ -320,6 +322,7 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
                     plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
 
                 plt.show(block=True)
+                """
                 """
                 #print ('Memoizing goal path')
                 #return
@@ -350,7 +353,7 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
     return rrt
 
 
-
+""" 
 # Feel free to change any of the values below.
 num_vertices = 1600
 dt = 18
@@ -369,7 +372,7 @@ for (v1, v2) in rrt.edges:
     plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
 
 plt.show(block=True)
-
+"""
 
 
 
