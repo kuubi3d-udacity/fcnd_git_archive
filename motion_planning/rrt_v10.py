@@ -67,16 +67,110 @@ plt.switch_backend('Qt5agg')
 
 plt.rcParams['figure.figsize'] = 12, 12
 
+class MotionPlanning(Drone):
+
+    def __init__(self, connection):
+        super().__init__(connection)
+       
+        self.target_position = np.array([0.0, 0.0, 0.0])
+        self.waypoints = []
+        self.in_mission = True
+        self.check_state = {}
+        #self.rrt_star_path = []
+
+        # initial state
+        self.flight_state = States.MANUAL
+
+        # register all your callbacks here
+        self.register_callback(MsgID.LOCAL_POSITION, self.local_position_callback)
+        self.register_callback(MsgID.LOCAL_VELOCITY, self.velocity_callback)
+        self.register_callback(MsgID.STATE, self.state_callback)
+
+    def local_position_callback(self):
+        print (self.local_position[2], self.target_position[2])
+        if self.flight_state == States.TAKEOFF:
+            if -1.0 * self.local_position[2] > 0.95 * self.target_position[2]:
+                self.waypoint_transition()
+        elif self.flight_state == States.WAYPOINT:
+            if np.linalg.norm(self.target_position[0:2] - self.local_position[0:2]) < 1.0:
+                if len(self.waypoints) > 0:
+                    self.waypoint_transition()
+                else:
+                    if np.linalg.norm(self.local_velocity[0:2]) < 1.0:
+                        self.landing_transition()
+
+    def velocity_callback(self):
+        if self.flight_state == States.LANDING:
+            if self.global_position[2] - self.global_home[2] < 0.1:
+                if abs(self.local_position[2]) < 0.01:
+                    self.disarming_transition()
+
+    def state_callback(self):
+        if self.in_mission:
+            if self.flight_state == States.MANUAL:
+                self.arming_transition()
+            elif self.flight_state == States.ARMING:
+                if self.armed:
+                    RRT
+            elif self.flight_state == States.PLANNING:
+                self.takeoff_transition()
+            elif self.flight_state == States.DISARMING:
+                if ~self.armed & ~self.guided:
+                    self.manual_transition()
+
+    def arming_transition(self):
+        self.flight_state = States.ARMING
+        print("arming transition")
+        self.arm()
+        self.take_control()
+
+    def takeoff_transition(self):
+        self.flight_state = States.TAKEOFF
+        print("takeoff transition")
+        self.takeoff(self.target_position[2])
+
+    def waypoint_transition(self):
+        self.flight_state = States.WAYPOINT
+        print("waypoint transition")
+        self.target_position = self.waypoints.pop(0)
+        print('target position', self.target_position)
+        self.cmd_position(self.target_position[0], self.target_position[1], self.target_position[2], self.target_position[3])
+
+    def landing_transition(self):
+        self.flight_state = States.LANDING
+        print("landing transition")
+        self.land()
+
+    def disarming_transition(self):
+        self.flight_state = States.DISARMING
+        print("disarm transition")
+        self.disarm()
+        self.release_control()
+
+    def manual_transition(self):
+        self.flight_state = States.MANUAL
+        print("manual transition")
+        self.stop()
+        self.in_mission = False
+
+    def send_waypoints(self):
+        print("Sending waypoints to simulator ...")
+        data = msgpack.dumps(self.waypoints)
+        self.connection._master.write(data)
 
 class RRT:
+
+    print("RRT")    
+
+    
     def __init__(self, x_init):
         # A tree is a special case of a graph with
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
+        #self.rrt_path = nx.DiGraph()
+        #self.rrt_path.add_node(x_init)
                 
     
     def add_vertex(self, x_new):
@@ -232,9 +326,9 @@ def nearest_neighbor(x_rand, rrt):
             closest_vertex = v
 
         # ~arrive at goal  
-        if closest_vertex == (30, 750):
-            print("Found Goal")    
-            break
+        #if closest_vertex == (30, 750):
+            #print("Found Goal")    
+            #break
     
     return closest_vertex
 
@@ -270,7 +364,6 @@ num_vertices = 1600
 dt = 18
 x_init = (20, 150)
 
-
 def generate_RRT(grid, x_init, num_vertices, dt,):
     
     rrt = RRT(x_init)
@@ -301,7 +394,7 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
             if np.linalg.norm(norm_g - norm_n) < 200:
                 goal_path = rrt
                 rrt_path = rrt
-                nx.draw_networkx(rrt_path)
+                #nx.draw_networkx(rrt_path)
 
                 #show_graph()
                 #plt.show(block=True)
@@ -387,97 +480,9 @@ class States(Enum):
     PLANNING = auto()
 
 
-class MotionPlanning(Drone):
 
-    def __init__(self, connection):
-        super().__init__(connection)
-       
-        self.target_position = np.array([0.0, 0.0, 0.0])
-        self.waypoints = []
-        self.in_mission = True
-        self.check_state = {}
-        #self.rrt_star_path = []
 
-        # initial state
-        self.flight_state = States.MANUAL
-
-        # register all your callbacks here
-        self.register_callback(MsgID.LOCAL_POSITION, self.local_position_callback)
-        self.register_callback(MsgID.LOCAL_VELOCITY, self.velocity_callback)
-        self.register_callback(MsgID.STATE, self.state_callback)
-
-    def local_position_callback(self):
-        print (self.local_position[2], self.target_position[2])
-        if self.flight_state == States.TAKEOFF:
-            if -1.0 * self.local_position[2] > 0.95 * self.target_position[2]:
-                self.waypoint_transition()
-        elif self.flight_state == States.WAYPOINT:
-            if np.linalg.norm(self.target_position[0:2] - self.local_position[0:2]) < 1.0:
-                if len(self.waypoints) > 0:
-                    self.waypoint_transition()
-                else:
-                    if np.linalg.norm(self.local_velocity[0:2]) < 1.0:
-                        self.landing_transition()
-
-    def velocity_callback(self):
-        if self.flight_state == States.LANDING:
-            if self.global_position[2] - self.global_home[2] < 0.1:
-                if abs(self.local_position[2]) < 0.01:
-                    self.disarming_transition()
-
-    def state_callback(self):
-        if self.in_mission:
-            if self.flight_state == States.MANUAL:
-                self.arming_transition()
-            elif self.flight_state == States.ARMING:
-                if self.armed:
-                    self.plan_astar()
-            elif self.flight_state == States.PLANNING:
-                self.takeoff_transition()
-            elif self.flight_state == States.DISARMING:
-                if ~self.armed & ~self.guided:
-                    self.manual_transition()
-
-    def arming_transition(self):
-        self.flight_state = States.ARMING
-        print("arming transition")
-        self.arm()
-        self.take_control()
-
-    def takeoff_transition(self):
-        self.flight_state = States.TAKEOFF
-        print("takeoff transition")
-        self.takeoff(self.target_position[2])
-
-    def waypoint_transition(self):
-        self.flight_state = States.WAYPOINT
-        print("waypoint transition")
-        self.target_position = self.waypoints.pop(0)
-        print('target position', self.target_position)
-        self.cmd_position(self.target_position[0], self.target_position[1], self.target_position[2], self.target_position[3])
-
-    def landing_transition(self):
-        self.flight_state = States.LANDING
-        print("landing transition")
-        self.land()
-
-    def disarming_transition(self):
-        self.flight_state = States.DISARMING
-        print("disarm transition")
-        self.disarm()
-        self.release_control()
-
-    def manual_transition(self):
-        self.flight_state = States.MANUAL
-        print("manual transition")
-        self.stop()
-        self.in_mission = False
-
-    def send_waypoints(self):
-        print("Sending waypoints to simulator ...")
-        data = msgpack.dumps(self.waypoints)
-        self.connection._master.write(data)
-
+""" 
     def plan_astar(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
@@ -536,7 +541,10 @@ class MotionPlanning(Drone):
          
         # TODO: prune path to minimize number of waypoints
        
-    
+ """
+
+
+
       
 def start(self):
     self.start_log("Logs", "NavLog.txt")
