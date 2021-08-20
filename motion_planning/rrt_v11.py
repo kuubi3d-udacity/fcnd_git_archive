@@ -99,6 +99,22 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
+    """  
+    def add_rrt_vertex(self, x_new):
+        self.rrt_path.add_node(tuple(x_init))
+    
+    def add_rrt_edge(self, x_near, x_new, u):
+        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+
+    @property
+    def rrt_vertices(self):
+        return self.rrt_path.nodes()
+   
+    @property
+    def rrt_edges(self):
+        return self.rrt_path.edges()                                               
+"""
+
     def create_grid(self, data, drone_altitude, safety_distance):
         """
         Returns a grid representation of a 2D configuration space
@@ -217,9 +233,7 @@ class RRT:
         #rrt = self.rrt
 
         for _ in range(num_vertices):
-
-           
-            
+               
             x_rand = RRT.sample_state(self, grid)
             # sample states until a free state is found
             while grid[int(x_rand[0]), int(x_rand[1])] == 1:
@@ -240,16 +254,30 @@ class RRT:
             if np.linalg.norm(norm_g - norm_n) < 200:
                 # goal_path = rrt
                 print("path mapped")
-                sys.exit("mapping...")
+                #sys.exit("mapping...")
 
                 #self.Goal_Path(self, grid, rrt)
+                
+                print ('Memoizing goal path')
+                #sys.exit('RRT Memoization...')
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
             
-        
+            """ 
+            # Now let's plot the generated RRT.
+
+            plt.imshow(grid, cmap='Greys', origin='lower')
+            plt.plot(x_init[1], x_init[0], 'ro')
+            plt.plot(x_goal[1], x_goal[0], 'ro')
+
+            for (v1, v2) in rrt.edges:
+                plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+
+                plt.show(block=True)    
+            """
         print ("RRT Path Mapped")
 
         return rrt, rrt_path, v_near, x_near # goal_path 

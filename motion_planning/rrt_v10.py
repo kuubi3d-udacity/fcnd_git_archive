@@ -158,6 +158,44 @@ class MotionPlanning(Drone):
         data = msgpack.dumps(self.waypoints)
         self.connection._master.write(data)
 
+        
+    # environment encoded as a grid
+
+    TARGET_ALTITUDE = 5
+    SAFETY_DISTANCE = 5
+
+    #self.target_position[2] = TARGET_ALTITUDE
+
+    # TODO: read lat0, lon0 from colliders into floating point values
+
+    # TODO: set home position to (lon0, lat0, 0)
+
+    # TODO: retrieve current global position
+
+    # TODO: convert to current local position using global_to_local()
+
+    #print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
+                                                                        #self.local_position))
+    # Read in obstacle map
+    data = np.loadtxt('colliders.csv', delimiter=',', dtype='float64', skiprows=2)
+
+    # Define a grid for a particular altitude and safety margin around obstacles
+    grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+
+    # Let's take a look at the example environment we'll be using.
+
+    plt.imshow(grid, cmap='Greys', origin='upper')
+        
+
+    # Next you'll implement the functions necessary to generate an RRT. Feel free to change the function signatures however you please, just remember to update `generate_RRT` accordingly.
+
+    # ### Sampling States
+    # 
+    # The first part of generating an RRT is sampling states based on the environment. The sampled state must be in free space. 
+   
+
+   
+
 class RRT:
 
     print("RRT")    
@@ -261,48 +299,13 @@ def create_grid(data, drone_altitude, safety_distance):
     #print(grid, int(north_min), int(east_min))
     return grid, int(north_min), int(east_min)
 
-
-
-    
-# environment encoded as a grid
-
-TARGET_ALTITUDE = 5
-SAFETY_DISTANCE = 5
-
-#self.target_position[2] = TARGET_ALTITUDE
-
-# TODO: read lat0, lon0 from colliders into floating point values
-
-# TODO: set home position to (lon0, lat0, 0)
-
-# TODO: retrieve current global position
-
-# TODO: convert to current local position using global_to_local()
-
-#print('global home {0}, position {1}, local position {2}'.format(self.global_home, self.global_position,
-                                                                    #self.local_position))
-# Read in obstacle map
-data = np.loadtxt('colliders.csv', delimiter=',', dtype='float64', skiprows=2)
-
-# Define a grid for a particular altitude and safety margin around obstacles
-grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
-
-# Let's take a look at the example environment we'll be using.
-
-plt.imshow(grid, cmap='Greys', origin='upper')
-    
-
-# Next you'll implement the functions necessary to generate an RRT. Feel free to change the function signatures however you please, just remember to update `generate_RRT` accordingly.
-
-# ### Sampling States
-# 
-# The first part of generating an RRT is sampling states based on the environment. The sampled state must be in free space. 
-
-
 def sample_state(grid):
     x = np.random.uniform(0, grid.shape[0])
     y = np.random.uniform(0, grid.shape[1])
     return (x, y)
+
+
+
 
 
 # ### Nearest Neighbors
@@ -359,13 +362,17 @@ def new_state(x_near, u, dt):
 # 
 # Awesome! Now we'll put everything together and generate an RRT.
 
-x_goal = (30, 750)
-num_vertices = 1600
-dt = 18
-x_init = (20, 150)
+
 
 def generate_RRT(grid, x_init, num_vertices, dt,):
     
+    
+    x_goal = (30, 750)
+    num_vertices = 1600
+    dt = 18
+    x_init = (20, 150)
+
+
     rrt = RRT(x_init)
     
     for _ in range(num_vertices):
@@ -417,9 +424,11 @@ def generate_RRT(grid, x_init, num_vertices, dt,):
                 plt.show(block=True)
                 """
                 """
-                #print ('Memoizing goal path')
-                #return
-                #sys.exit('RRT Memoization...')
+                print ('Memoizing goal path')
+                sys.exit('RRT Memoization...')
+                
+            return rrt
+                
                  
         # ~ arrive at goal    
         '''else:   
