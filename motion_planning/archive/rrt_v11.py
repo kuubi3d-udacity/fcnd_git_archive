@@ -80,10 +80,14 @@ class RRT:
      
 
     def __init__(self, x_init):
+        
         # A tree is a special case of a graph with
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
+
+        self.rrt_path = nx.DiGraph()
+        self.rrt_path.add_node(x_init)
                 
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
@@ -99,9 +103,9 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
-    """  
+    
     def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(x_init))
+        self.rrt_path.add_node(tuple(RRT.x_init))
     
     def add_rrt_edge(self, x_near, x_new, u):
         self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
@@ -113,7 +117,7 @@ class RRT:
     @property
     def rrt_edges(self):
         return self.rrt_path.edges()                                               
-"""
+
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -248,6 +252,36 @@ class RRT:
             norm_n = np.array(x_near)
             #norm_n = np.array(v_near)
             
+            
+            print ('Memoizing goal path')
+
+            """ 
+            
+            # ~ Memoize optimal path  
+                else:   
+                #queue = PriorityQueue()
+                #queue.put((0, start))
+                #visited = set(start)
+
+                #branch = {}
+                found = False
+
+                while not queue.empty():
+                    item = queue.get()
+                    current_node = item[1]
+                    if current_node == start:
+                        current_cost = 0.0
+                    else:              
+                        current_cost = branch[current_node][0]
+                        
+                if current_node == goal:        
+                    print('Found a path.')
+                    found = True
+                    break
+                #else:
+                    
+                """
+
             print (norm_g, norm_n)
             print (np.linalg.norm(norm_g - norm_n))
 
@@ -260,6 +294,8 @@ class RRT:
                 
                 print ('Memoizing goal path')
                 #sys.exit('RRT Memoization...')
+                return
+            
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
@@ -485,6 +521,8 @@ class MotionPlanning(Drone):
             for (g1, g2) in rrt.edges:
                 rrt_path[g1, g2] = rrt.edges[g1, g2]
                 plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
+
+
         
         plt.show(block=True)        
         sys.exit('Found goal')
