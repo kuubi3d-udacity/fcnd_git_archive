@@ -80,7 +80,6 @@ class RRT:
      
 
     def __init__(self, x_init):
-        
         # A tree is a special case of a graph with
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
@@ -103,7 +102,7 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
-    """ 
+    
     def add_rrt_vertex(self, x_new):
         self.rrt_path.add_node(tuple(RRT.x_init))
     
@@ -116,9 +115,7 @@ class RRT:
    
     @property
     def rrt_edges(self):
-        return self.rrt_path.edges() 
-                                                      
-    """
+        return self.rrt_path.edges()    
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -231,14 +228,20 @@ class RRT:
     def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
         
-        x_goal = [30, 750]
-        
+        x_goal = (30, 750)
+        rrt_goal = ()
+        num_vertices = 1600
+        dt = 18
+        x_init = (20, 150)
+        path = [(20, 30), (40, 50)]
+
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
-        #rrt = self.rrt
 
         for _ in range(num_vertices):
-               
+
+           
+            
             x_rand = RRT.sample_state(self, grid)
             # sample states until a free state is found
             while grid[int(x_rand[0]), int(x_rand[1])] == 1:
@@ -253,73 +256,25 @@ class RRT:
             norm_n = np.array(x_near)
             #norm_n = np.array(v_near)
             
-            
-            print ('Memoizing goal path')
-
-            """ 
-            
-            # ~ Memoize optimal path  
-            else:   
-            #queue = PriorityQueue()
-            #queue.put((0, start))
-            #visited = set(start)
-
-            #branch = {}
-            found = False
-
-            while not queue.empty():
-                item = queue.get()
-                current_node = item[1]
-                if current_node == start:
-                    current_cost = 0.0
-                else:              
-                    current_cost = branch[current_node][0]
-                    
-            if current_node == goal:        
-                print('Found a path.')
-                found = True
-                break
-            #else:
-                
-            """
-
             print (norm_g, norm_n)
             print (np.linalg.norm(norm_g - norm_n))
 
             if np.linalg.norm(norm_g - norm_n) < 200:
-                # goal_path = rrt
-                print("path mapped")
-                #sys.exit("mapping...")
-
-                #self.Goal_Path(self, grid, rrt)
-                
-                print ('Memoizing goal path')
-                #sys.exit('RRT Memoization...')
-                return
-            
+               rrt.add_edge(x_near, x_new, u)
+               
+               #self.rrt_goal = round(x_near[0],[1])      
+               print ("Goal Found.")
+               return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
             
-            """ 
-            # Now let's plot the generated RRT.
-
-            plt.imshow(grid, cmap='Greys', origin='lower')
-            plt.plot(x_init[1], x_init[0], 'ro')
-            plt.plot(x_goal[1], x_goal[0], 'ro')
-
-            for (v1, v2) in rrt.edges:
-                plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
-
-                plt.show(block=True)    
-            """
+        
         print ("RRT Path Mapped")
 
-        return rrt, v_near, x_near # goal_path,  rrt_path,
-
-    
+        return rrt 
                     
 class States(Enum):
     MANUAL = auto()
@@ -460,19 +415,14 @@ class MotionPlanning(Drone):
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
-        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        #path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         
         
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
         
         rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-
-        found_goal = 1
-        if found_goal == 1:
-            rrt_path = rrt
-            #self.Goal_Path(self, grid, rrt_path)
-            
+      
 
         # Now let's plot the generated RRT.
 
@@ -491,7 +441,14 @@ class MotionPlanning(Drone):
         
         
         #sys.exit('generating waypoints')
+        
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        print("a_star nodes", path, "\n")
+               
+        print("rrt nodes", list(rrt.vertices)) #, rrt.edges
+        #rrt_path, _= list(rrt.vertices)
+         
+
         #print (RRT.vertices)
         # Convert path to waypoints
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
@@ -499,40 +456,12 @@ class MotionPlanning(Drone):
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
-        return rrt
 
-
-    """ 
-    def Goal_Path(self, grid, rrt, rrt_path):       
-        print ("Goal Found.")
-
-        #rrt_path = np.array(rrt_path)
-
-        #goal_path = rrt
-        found_goal = 1
-        if found_goal == 1: 
-            for gp in rrt:
-                print ("Goal Path", rrt, gp)
-            
-            #for i in range(num_vertices,0,-1):
-            #    print ("goal path", gp)    
-            
-            plt.imshow(grid, cmap='Greys', origin='lower')
-            
-            for (g1, g2) in rrt.edges:
-                rrt_path[g1, g2] = rrt.edges[g1, g2]
-                plt.plot([g1[1], g2[1]], [g1[0], g2[0]], 'y-')
-
-
-        
-        plt.show(block=True)        
-        sys.exit('Found goal')
-    
-        
-
-        return rrt, #goal_path
-    """
-
+        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in rrt_path]
+        # Set self.waypoints
+        self.waypoints = waypoints
+        # TODO: send waypoints to sim (this is just for visualization of waypoints)
+        self.send_waypoints()
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")

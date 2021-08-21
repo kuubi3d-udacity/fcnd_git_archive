@@ -84,6 +84,9 @@ class RRT:
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
+
+        self.rrt_path = nx.DiGraph()
+        self.rrt_path.add_node(x_init)
                 
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
@@ -98,6 +101,21 @@ class RRT:
     @property
     def edges(self):
         return self.tree.edges()
+
+    
+    def add_rrt_vertex(self, x_new):
+        self.rrt_path.add_node(tuple(RRT.x_init))
+    
+    def add_rrt_edge(self, x_near, x_new, u):
+        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+
+    @property
+    def rrt_vertices(self):
+        return self.rrt_path.nodes()
+   
+    @property
+    def rrt_edges(self):
+        return self.rrt_path.edges()    
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -210,7 +228,12 @@ class RRT:
     def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
         
-        x_goal = [30, 750]
+        x_goal = (30, 750)
+        rrt_goal = ()
+        num_vertices = 1600
+        dt = 18
+        x_init = (20, 150)
+        path = [(20, 30), (40, 50)]
 
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
@@ -392,7 +415,7 @@ class MotionPlanning(Drone):
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
-        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        #path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         
         
         # TODO: prune path to minimize number of waypoints
@@ -418,10 +441,23 @@ class MotionPlanning(Drone):
         
         
         #sys.exit('generating waypoints')
+        
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        print("a_star nodes", path, "\n")
+               
+        print("rrt nodes", list(rrt.vertices)) #, rrt.edges
+        #rrt_path, _= list(rrt.vertices)
+         
+
         #print (RRT.vertices)
         # Convert path to waypoints
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        # Set self.waypoints
+        self.waypoints = waypoints
+        # TODO: send waypoints to sim (this is just for visualization of waypoints)
+        self.send_waypoints()
+
+        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in rrt_path]
         # Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
