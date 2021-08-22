@@ -23,33 +23,6 @@ from udacidrone.messaging import MsgID
 from udacidrone.frame_utils import global_to_local
 
 
-# coding: utf-8
-
-# # Rapidly-Exploring Random Tree (RRT)
-# 
-# Your task is to generate an RRT based on the following pseudocode:
-# 
-# ```
-# def generate_RRT(x_init, num_vertices, dt):
-#     rrt = RRT(x_init)
-#     for k in range(num_vertices):
-#         x_rand = sample_state()
-#         x_near = nearest_neighbor(x_rand, rrt)
-#         u = select_input(x_rand, x_near)
-#         x_new = new_state(x_near, u, dt)
-#         # directed edge
-#         rrt.add_edge(x_near, x_new, u)
-#     return rrt
-# ```
-#     
-# The `RRT` class has already been implemented. Your task is to complete the implementation of the following functions:
-# 
-# * `sample_state`
-# * `nearest_neighbor`
-# * `select_input`
-# * `new_state`
-# 
-
 
 import matplotlib
 #matplotlib.use('Qt5Agg')
@@ -64,6 +37,9 @@ from queue import PriorityQueue
 
 import math
 from collections import Counter
+
+import re
+from math import sqrt
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 plt.switch_backend('Qt5agg')
@@ -120,6 +96,7 @@ class RRT:
     def rrt_edges(self):
         return self.rrt_path.edges()    
 
+    
     def create_grid(self, data, drone_altitude, safety_distance):
         
         """
@@ -229,115 +206,206 @@ class RRT:
     # Awesome! Now we'll put everything together and generate an RRT.
 
     
+class Action(Enum):
 
-    def generate_RRT(self, grid, x_init, num_vertices, dt,):
-       
+    WEST = (0, -1, 1)
+    EAST = (0, 1, 1)
+    NORTH = (-1, 0, 1)
+    SOUTH = (1, 0, 1)
+    SOUTH_EAST = (1, 1, sqrt(2))
+    NORTH_EAST = (-1, 1, sqrt(2))
+    SOUTH_WEST = (1, -1, sqrt(2))
+    NORTH_WEST = (-1, -1, sqrt(2))
+
+    @property
+    def cost(self):
+        return self.value[2]
+
+    @property
+    def delta(self):
+        return (self.value[0], self.value[1])
+
+
+
+
+def valid_actions(grid, current_node):
+    """
+    Returns a list of valid actions given a grid and current node.
+    """
+    valid_actions = list(Action)
+    n, m = grid.shape[0] - 1, grid.shape[1] - 1
+    x, y = current_node
+
+    # check if the node is off the grid or
+    # it's an obstacle
+
+    if x - 1 < 0 or grid[x - 1, y] == 1:
+        valid_actions.remove(Action.NORTH)
+    if x + 1 > n or grid[x + 1, y] == 1:
+        valid_actions.remove(Action.SOUTH)
+    if y - 1 < 0 or grid[x, y - 1] == 1:
+        valid_actions.remove(Action.WEST)
+    if y + 1 > m or grid[x, y + 1] == 1:
+        valid_actions.remove(Action.EAST)
+    if x + 1 > n or y + 1 > m or grid[x + 1, y + 1] == 1:
+        valid_actions.remove(Action.SOUTH_EAST)
+    if x - 1 < 0 or y + 1 > m or grid[x - 1, y + 1] == 1:
+        valid_actions.remove(Action.NORTH_EAST)
+    if x + 1 > n or y - 1 < 0 or grid[x + 1, y - 1] == 1:
+        valid_actions.remove(Action.SOUTH_WEST)
+    if x - 1 < 0 or y - 1 < 0 or grid[x - 1, y - 1] == 1:
+        valid_actions.remove(Action.NORTH_WEST)
+
+    return valid_actions
+    
+def memoize_nodes(self, grid, h, grid_start, grid_goal, goal_path, path_cost):
+    """
+    Given a grid and heuristic function returns
+    the lowest cost path from start to goal.
+    """
+    print("memoizing nodes", "\n")
+            
+
+    
+    queue = PriorityQueue()
+    queue.put((0, grid_start))
+    visited = set(grid_start)
+
+    branch = {}
+    found = False
+
+    while not queue.empty():
+        item = queue.get()
         
-        x_goal = (30, 750)
-        #rrt_goal = ()
-        num_vertices = 1600
-        dt = 18
-        x_init = (20, 150)
-        #path = [(20, 30), (40, 50)]
+        current_node = item[0]
+        current_cost = item[1]
 
-        print ('Generating RRT. It may take a few seconds...')
-        rrt = RRT(x_init)
-
-        for _ in range(num_vertices):
-                      
-            x_rand = RRT.sample_state(self, grid)
-            # sample states until a free state is found
-            while grid[int(x_rand[0]), int(x_rand[1])] == 1:
-                x_rand = RRT.sample_state(self, grid)
-                                  
-            x_near = RRT.nearest_neighbor(self, x_rand, rrt)
-            u = RRT.select_input(self, x_rand, x_near)
-            x_new = RRT.new_state(self, x_near, u, dt)
-
-            RRT.memoize_nodes
-            
-            v_near = np.array([30, 750])
-            norm_g = np.array(x_goal)
-            norm_n = np.array(x_near)
-            #norm_n = np.array(v_near)
-            
-            print (norm_g, norm_n)
-            print (np.linalg.norm(norm_g - norm_n))
-
-            if np.linalg.norm(norm_g - norm_n) < 200:
-               rrt.add_edge(x_near, x_new, u)
-               
-               #self.rrt_goal = round(x_near[0],[1])      
-               print ("Goal Found.")
-               return rrt #, self.rrt_goal
-
-            elif grid[int(x_new[0]), int(x_new[1])] == 0:
-                # the orientation `u` will be added as metadata to
-                # the edge
-                rrt.add_edge(x_near, x_new, u)
-            
-            print ("RRT Path Mapped")
-
-            return rrt 
-        
-    def memoize_nodes(grid, h, grid_start, grid_goal, goal_path, path_cost):
-        """
-        Given a grid and heuristic function returns
-        the lowest cost path from start to goal.
-        """
-        print("memoizing nodes", "\n")
-              
-
-        goal_path = []
-        path_cost = 0
-        queue = PriorityQueue()
-        queue.put((0, grid_start))
-        visited = set(grid_start)
-
-        branch = {}
-        found = False
-
-        while not queue.empty():
-            item = queue.get()
-            
-            current_node = item[0]
-            current_cost = item[1]
-
-            if current_node == grid_goal:
-                print('Found a path.')
-                found = True
-                break
-            else:
-                # Get the new vertexes connected to the current vertex
-                for a in RRT.vertices(grid, current_node):
-                    next_node = (current_node[0] + a.delta[0], current_node[1] + a.delta[1])
-                    new_cost = current_cost + a.cost + h(next_node, grid_goal)
-
-                    if next_node not in visited:
-                        visited.add(next_node)
-                        queue.put((new_cost, next_node))
-
-                        branch[next_node] = (new_cost, current_node, a)
-
-        if found:
-            # retrace steps
-            n = grid_goal
-            path_cost = branch[n][1]
-            goal_path.append(grid_goal)
-            while branch[n][0] != grid_start:
-                goal_path.append(branch[n][0])
-                n = branch[n][1]
-            goal_path.append(branch[n][0])
-            
-            RRT.memoize_nodes()
+        if current_node == grid_goal:
+            print('Found a path.')
+            found = True
+            break
         else:
-            print('**********************')
-            print('Failed to find a path!')
-            print('**********************')
-        return goal_path[::-1], path_cost        
+            # Get the new vertexes connected to the current vertex
+            for a in valid_actions(grid, current_node):
+                next_node = (current_node[0] + a.delta[0], current_node[1] + a.delta[1])
+                new_cost = current_cost + a.cost + h(next_node, grid_goal)
+
+                if next_node not in visited:
+                    visited.add(next_node)
+                    queue.put((new_cost, next_node))
+
+                    branch[next_node] = (new_cost, current_node, a)
+
+    if found:
+        # retrace steps
+        n = grid_goal
+        path_cost = branch[n][1]
+        goal_path.append(grid_goal)
+        while branch[n][0] != grid_start:
+            goal_path.append(branch[n][0])
+            n = branch[n][1]
+        goal_path.append(branch[n][0])
+        
+        
+    else:
+        print('**********************')
+        print('Failed to find a path!')
+        print('**********************')
+    return goal_path[::-1], path_cost            
+    goal_path = []
+    path_cost = 0
+
+    TARGET_ALTITUDE = 5
+    SAFETY_DISTANCE = 5
+
+    self.target_position[2] = TARGET_ALTITUDE
+
+    # TODO: read lat0, lon0 from colliders into floating point values
+    
+    # TODO: set home position to (lon0, lat0, 0)
+
+    # TODO: retrieve current global position
+
+    # TODO: convert to current local position using global_to_local()
+    
+    print('global home {0}, global position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
+    # Read in obstacle map
+    data = np.loadtxt('colliders.csv', delimiter=',', dtype='float64', skiprows=2)
+    
+    # Define a grid for a particular altitude and safety margin around obstacles
+    #grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+    grid, north_offset, east_offset = RRT.create_grid(self, data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+    print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
+    # Define starting point on the grid (this is just grid center)
+    grid_start = (-north_offset, -east_offset)
+    # TODO: convert start position to current position rather than map center
+    
+        # Define starting point on the grid (this is just grid center)
+    grid_start = (-north_offset, -east_offset)
+    # TODO: convert start position to current position rather than map center
+    
+    # Set goal as some arbitrary position on the grid
+    grid_goal = (-north_offset + 10, -east_offset + 10)
+    
+    
+    print ('Generating RRT. It may take a few seconds...')
+    rrt = RRT(x_init)
+
+    for _ in range(num_vertices):
+                    
+        x_rand = RRT.sample_state(self, grid)
+        # sample states until a free state is found
+        while grid[int(x_rand[0]), int(x_rand[1])] == 1:
+            x_rand = RRT.sample_state(self, grid)
+                                
+        x_near = RRT.nearest_neighbor(self, x_rand, rrt)
+        u = RRT.select_input(self, x_rand, x_near)
+        x_new = RRT.new_state(self, x_near, u, dt)
+
+        Actions.memoize_nodes(self, grid, heuristic, grid_start, grid_goal, goal_path, path_cost)
+        
+        v_near = np.array([30, 750])
+        norm_g = np.array(x_goal)
+        norm_n = np.array(x_near)
+        #norm_n = np.array(v_near)
+        
+        print (norm_g, norm_n)
+        print (np.linalg.norm(norm_g - norm_n))
+
+        if np.linalg.norm(norm_g - norm_n) < 200:
+            rrt.add_edge(x_near, x_new, u)
             
-    def heuristic(position, goal_position):
-        return np.linalg.norm(np.array(position) - np.array(goal_position))       
+            #self.rrt_goal = round(x_near[0],[1])      
+            print ("Goal Found.")
+            return rrt #, self.rrt_goal
+
+        elif grid[int(x_new[0]), int(x_new[1])] == 0:
+            # the orientation `u` will be added as metadata to
+            # the edge
+            rrt.add_edge(x_near, x_new, u)
+        
+        print ("RRT Path Mapped")
+
+        return rrt, grid, grid_start, grid_goal, goal_path, path_cost
+    
+
+        
+def heuristic(position, goal_position):
+    return np.linalg.norm(np.array(position) - np.array(goal_position))    
+
+
+#:::: from darienmt
+def read_home(filename):
+    """
+    Reads home (lat, lon) from the first line of the `file`.
+    """
+    with open(filename) as f:
+        first_line = f.readline()
+    match = re.match(r'^lat0 (.*), lon0 (.*)$', first_line)
+    if match:
+        lat = match.group(1)
+        lon = match.group(2)
+    return np.fromstring(f'{lat},{lon}', dtype='Float64', sep=',')
 
                    
 class States(Enum):
@@ -514,8 +582,12 @@ class MotionPlanning(Drone):
 
         #print (RRT.vertices)
         # Convert path to waypoints
+        
+        goal_path = []
+        path_cost = 0
 
-        go_path = goal_path[]
+
+        go_path = RRT.memoize_nodes(self, RRT, grid, heuristic, grid_start, grid_goal, goal_path, path_cost)
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         self.waypoints = waypoints

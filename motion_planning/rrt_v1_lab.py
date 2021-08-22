@@ -23,33 +23,6 @@ from udacidrone.messaging import MsgID
 from udacidrone.frame_utils import global_to_local
 
 
-# coding: utf-8
-
-# # Rapidly-Exploring Random Tree (RRT)
-# 
-# Your task is to generate an RRT based on the following pseudocode:
-# 
-# ```
-# def generate_RRT(x_init, num_vertices, dt):
-#     rrt = RRT(x_init)
-#     for k in range(num_vertices):
-#         x_rand = sample_state()
-#         x_near = nearest_neighbor(x_rand, rrt)
-#         u = select_input(x_rand, x_near)
-#         x_new = new_state(x_near, u, dt)
-#         # directed edge
-#         rrt.add_edge(x_near, x_new, u)
-#     return rrt
-# ```
-#     
-# The `RRT` class has already been implemented. Your task is to complete the implementation of the following functions:
-# 
-# * `sample_state`
-# * `nearest_neighbor`
-# * `select_input`
-# * `new_state`
-# 
-
 
 import matplotlib
 #matplotlib.use('Qt5Agg')
@@ -64,6 +37,9 @@ from queue import PriorityQueue
 
 import math
 from collections import Counter
+
+import re
+from math import sqrt
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 plt.switch_backend('Qt5agg')
@@ -234,12 +210,48 @@ class RRT:
        
         
         x_goal = (30, 750)
-        #rrt_goal = ()
         num_vertices = 1600
         dt = 18
         x_init = (20, 150)
         #path = [(20, 30), (40, 50)]
+        
+        
+        goal_path = []
+        path_cost = 0
 
+        TARGET_ALTITUDE = 5
+        SAFETY_DISTANCE = 5
+
+        self.target_position[2] = TARGET_ALTITUDE
+
+        # TODO: read lat0, lon0 from colliders into floating point values
+        
+        # TODO: set home position to (lon0, lat0, 0)
+
+        # TODO: retrieve current global position
+ 
+        # TODO: convert to current local position using global_to_local()
+        
+        print('global home {0}, global position {1}, local position {2}'.format(self.global_home, self.global_position, self.local_position))
+        # Read in obstacle map
+        data = np.loadtxt('colliders.csv', delimiter=',', dtype='float64', skiprows=2)
+        
+        # Define a grid for a particular altitude and safety margin around obstacles
+        #grid, north_offset, east_offset = create_grid(data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+        grid, north_offset, east_offset = RRT.create_grid(self, data, TARGET_ALTITUDE, SAFETY_DISTANCE)
+        print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
+        # Define starting point on the grid (this is just grid center)
+        grid_start = (-north_offset, -east_offset)
+        # TODO: convert start position to current position rather than map center
+        
+         # Define starting point on the grid (this is just grid center)
+        grid_start = (-north_offset, -east_offset)
+        # TODO: convert start position to current position rather than map center
+        
+        # Set goal as some arbitrary position on the grid
+        grid_goal = (-north_offset + 10, -east_offset + 10)
+        
+        
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
 
@@ -254,7 +266,7 @@ class RRT:
             u = RRT.select_input(self, x_rand, x_near)
             x_new = RRT.new_state(self, x_near, u, dt)
 
-            RRT.memoize_nodes
+            RRT.memoize_nodes(self, grid, heuristic, grid_start, grid_goal, goal_path, path_cost)
             
             v_near = np.array([30, 750])
             norm_g = np.array(x_goal)
@@ -278,9 +290,9 @@ class RRT:
             
             print ("RRT Path Mapped")
 
-            return rrt 
+            return rrt, grid, grid_start, grid_goal, goal_path, path_cost
         
-    def memoize_nodes(grid, h, grid_start, grid_goal, goal_path, path_cost):
+    def memoize_nodes(self, grid, h, grid_start, grid_goal, goal_path, path_cost):
         """
         Given a grid and heuristic function returns
         the lowest cost path from start to goal.
@@ -288,8 +300,7 @@ class RRT:
         print("memoizing nodes", "\n")
               
 
-        goal_path = []
-        path_cost = 0
+        
         queue = PriorityQueue()
         queue.put((0, grid_start))
         visited = set(grid_start)
@@ -337,7 +348,21 @@ class RRT:
         return goal_path[::-1], path_cost        
             
     def heuristic(position, goal_position):
-        return np.linalg.norm(np.array(position) - np.array(goal_position))       
+        return np.linalg.norm(np.array(position) - np.array(goal_position))    
+
+    
+    #:::: from darienmt
+    def read_home(filename):
+        """
+        Reads home (lat, lon) from the first line of the `file`.
+        """
+        with open(filename) as f:
+            first_line = f.readline()
+        match = re.match(r'^lat0 (.*), lon0 (.*)$', first_line)
+        if match:
+            lat = match.group(1)
+            lon = match.group(2)
+        return np.fromstring(f'{lat},{lon}', dtype='Float64', sep=',')
 
                    
 class States(Enum):
@@ -514,8 +539,12 @@ class MotionPlanning(Drone):
 
         #print (RRT.vertices)
         # Convert path to waypoints
+        
+        goal_path = []
+        path_cost = 0
 
-        go_path = goal_path[]
+
+        go_path = RRT.memoize_nodes(self, RRT, grid, heuristic, grid_start, grid_goal, goal_path, path_cost)
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         self.waypoints = waypoints
