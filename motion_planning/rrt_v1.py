@@ -477,7 +477,10 @@ def memoize_nodes(grid, h, grid_start, grid_goal, goal_path, path_cost):
             break
         else:
             # Get the new vertexes connected to the current vertex
+            
             for a in RRT.vertices(grid, current_node):
+                # get the tuple representation
+                da = action.delta
                 next_node = (current_node[0] + a.delta[0], current_node[1] + a.delta[1])
                 new_cost = current_cost + a.cost + h(next_node, grid_goal)
 
