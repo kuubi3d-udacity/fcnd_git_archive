@@ -2,6 +2,7 @@ import sys
 
 import argparse
 import time
+from joblib import MemorizedResult
 import msgpack
 from enum import Enum, auto
 
@@ -13,11 +14,15 @@ import decimal
 # file 'LICENSE', which is part of this source code package.
 
 from operator import itemgetter
+
+from sympy import memoize_property
 from planning_utils import a_star, heuristic, create_grid
 from udacidrone import Drone
 from udacidrone.connection import MavlinkConnection
 from udacidrone.messaging import MsgID
 from udacidrone.frame_utils import global_to_local
+
+
 
 
 import matplotlib
@@ -39,8 +44,6 @@ plt.switch_backend('Qt5agg')
 
 plt.rcParams['figure.figsize'] = 12, 12
 
-
-
 class RRT:
 
     x_goal = (30, 750)
@@ -50,17 +53,12 @@ class RRT:
     x_init = (20, 150)
     path = [(20, 30), (40, 50)]
      
-    path_cost = 0
-
 
     def __init__(self, x_init):
         # A tree is a special case of a graph with
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
-
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
                 
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
@@ -75,21 +73,6 @@ class RRT:
     @property
     def edges(self):
         return self.tree.edges()
-
-    
-    def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
-    
-    def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
-
-    @property
-    def rrt_vertices(self):
-        return self.rrt_path.nodes()
-   
-    @property
-    def rrt_edges(self):
-        return self.rrt_path.edges()    
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -202,12 +185,7 @@ class RRT:
     def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
         
-        x_goal = (30, 750)
-        rrt_goal = ()
-        num_vertices = 1600
-        dt = 18
-        x_init = (20, 150)
-        path = [(20, 30), (40, 50)]
+        x_goal = [30, 750]
 
         print ('Generating RRT. It may take a few seconds...')
         rrt = RRT(x_init)
@@ -229,7 +207,6 @@ class RRT:
             norm_g = np.array(x_goal)
             norm_n = np.array(x_near)
             #norm_n = np.array(v_near)
-           
             
             print (norm_g, norm_n)
             print (np.linalg.norm(norm_g - norm_n))
@@ -245,124 +222,11 @@ class RRT:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                #memoize_nodes(grid, heuristic, x_init, x_goal, x_new)
-        States
+            
+        
         print ("RRT Path Mapped")
 
         return rrt 
-
-
-# Assume all actions cost the same.
-class Action(Enum):
-    """
-    An action is represented by a 3 element tuple.
-
-    The first 2 values are the delta of the action relative
-    to the current grid position. The third and final value
-    is the cost of performing the action.
-    """
-
-    WEST = (0, -1, 1)
-    EAST = (0, 1, 1)
-    NORTH = (-1, 0, 1)
-    SOUTH = (1, 0, 1)
-
-    @property
-    def cost(self):
-        return self.value[2]
-
-    @property
-    def delta(self):
-        return (self.value[0], self.value[1])
-
-
-def valid_actions(grid, rrt_vertex):
-    """
-    Returns a list of valid actions given a grid and current node.
-    """
-    valid_actions = list(Action)
-    n, m = grid.shape[0] - 1, grid.shape[1] - 1
-    x, y = rrt_vertex
-
-    # check if the node is off the grid or
-    # it's an obstacle
-
-    if x - 1 < 0 or grid[x - 1, y] == 1:
-        valid_actions.remove(Action.NORTH)
-    if x + 1 > n or grid[x + 1, y] == 1:
-        valid_actions.remove(Action.SOUTH)
-    if y - 1 < 0 or grid[x, y - 1] == 1:
-        valid_actions.remove(Action.WEST)
-    if y + 1 > m or grid[x, y + 1] == 1:
-        valid_actions.remove(Action.EAST)
-
-    return valid_actions
-
-
-def memoize_nodes(grid, h, start, goal, rrt_vertex):
-
-    rrt_path = []
-    path_cost = 0
-    queue = PriorityQueue()
-    
-    for v in rrt_vertex:
-        queue.put((v, path_cost))
-        
-    queue.put((start, 0))
-    visited = set(start)
-    
-
-    branch = {}
-    found = False
-    
-    while not queue.empty():
-        item = queue.get()
-        current_node = item[0]
-        if current_node == start:
-            current_cost = 0.0
-        else:              
-            current_cost = branch[current_node][1]
-            
-        if current_node == goal:        
-            print('Found memoized rrt node.')
-            found = True
-            break
-        else:
-            for action in valid_actions(grid, current_node):
-                # get the tuple representation
-                da = action.delta
-                next_node = (current_node[0] + da[0], current_node[1] + da[1])
-                branch_cost = current_cost + action.cost
-                queue_cost = branch_cost + h(next_node, goal)
-                
-                if next_node not in visited:                
-                    visited.add(next_node)               
-                    branch[next_node] = (branch_cost, current_node, action)
-                    queue.put((queue_cost, next_node))
-             
-    if found:
-        # retrace steps
-        n = goal
-        path_cost = branch[n][0]
-        rrt_path.append(goal)
-        while branch[n][1] != start:
-            rrt_path.append(branch[n][1])
-            n = branch[n][1]
-        rrt_path.append(branch[n][1])
-    else:
-        print('**********************')
-        print('Failed to find a rrt_path!')
-        print('**********************') 
-    return rrt_path[::-1], path_cost
-
-
-
-def heuristic(position, goal_position):
-    return np.linalg.norm(np.array(position) - np.array(goal_position))
-
-
-
-
                     
 class States(Enum):
     MANUAL = auto()
@@ -503,7 +367,7 @@ class MotionPlanning(Drone):
         # TODO: add diagonal motions with a cost of sqrt(2) to your A* implementation
         # or move to a different search space such as a graph (not done here)
         print('Local Start and Goal: ', grid_start, grid_goal)
-        #path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         
         
         # TODO: prune path to minimize number of waypoints
@@ -529,29 +393,14 @@ class MotionPlanning(Drone):
         
         
         #sys.exit('generating waypoints')
-        
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
-        print("a_star nodes", path, "\n")
-               
-        print("rrt nodes", list(rrt.vertices)) #, rrt.edges
-        #rrt_path, _= list(rrt.vertices)
-         
-
         #print (RRT.vertices)
         # Convert path to waypoints
-        
-        go_path = []
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
-
-        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in go_path]
-        # Set self.waypoints
-        #self.waypoints = waypoints
-        # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        #self.send_waypoints()
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
@@ -577,5 +426,3 @@ if __name__ == "__main__":
     time.sleep(1)
 
     drone.start()
-
-    

@@ -20,34 +20,6 @@ from udacidrone.messaging import MsgID
 from udacidrone.frame_utils import global_to_local
 
 
-# coding: utf-8
-
-# # Rapidly-Exploring Random Tree (RRT)
-# 
-# Your task is to generate an RRT based on the following pseudocode:
-# 
-# ```
-# def generate_RRT(x_init, num_vertices, dt):
-#     rrt = RRT(x_init)
-#     for k in range(num_vertices):
-#         x_rand = sample_state()
-#         x_near = nearest_neighbor(x_rand, rrt)
-#         u = select_input(x_rand, x_near)
-#         x_new = new_state(x_near, u, dt)
-#         # directed edge
-#         rrt.add_edge(x_near, x_new, u)
-#     return rrt
-# ```
-#     
-# The `RRT` class has already been implemented. Your task is to complete the implementation of the following functions:
-# 
-# * `sample_state`
-# * `nearest_neighbor`
-# * `select_input`
-# * `new_state`
-# 
-
-
 import matplotlib
 #matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
@@ -58,9 +30,6 @@ import time
 
 #from enum import Enum
 from queue import PriorityQueue
-
-import math
-from collections import Counter
 
 import math
 from collections import Counter
@@ -228,7 +197,7 @@ class RRT:
 
     
 
-    def generate_RRT(self, grid, x_init, num_vertices, dt):
+    def generate_RRT(self, grid, x_init, num_vertices, dt,):
        
         
         x_goal = (30, 750)
@@ -454,17 +423,19 @@ class MotionPlanning(Drone):
 
         #print (RRT.vertices)
         # Convert path to waypoints
+        
+        go_path = []
         waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         self.send_waypoints()
 
-        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in rrt_path]
+        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in go_path]
         # Set self.waypoints
-        self.waypoints = waypoints
+        #self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        self.send_waypoints()
+        #self.send_waypoints()
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
@@ -490,3 +461,62 @@ if __name__ == "__main__":
     time.sleep(1)
 
     drone.start()
+
+    
+def memoize_nodes(grid, h, grid_start, grid_goal, goal_path, path_cost):
+    """
+    Given a grid and heuristic function returns
+    the lowest cost path from start to goal.
+    """
+    print("memoizing nodes", "\n")
+
+    goal_path = []
+    path_cost = 0
+    queue = PriorityQueue()
+    queue.put((0, grid_start))
+    visited = set(grid_start)
+
+    branch = {}
+    found = False
+
+    while not queue.empty():
+        item = queue.get()
+
+        current_node = item[0]
+        current_cost = item[1]
+
+        if current_node == grid_goal:
+            print('Found a path.')
+            found = True
+            break
+        else:
+            # Get the new vertexes connected to the current vertex
+            for a in RRT.vertices(grid, current_node):
+                next_node = (current_node[0] + a.delta[0], current_node[1] + a.delta[1])
+                new_cost = current_cost + a.cost + h(next_node, grid_goal)
+
+                if next_node not in visited:
+                    visited.add(next_node)
+                    queue.put((new_cost, next_node))
+
+                    branch[next_node] = (new_cost, current_node, a)
+
+    if found:
+        # retrace steps
+        n = grid_goal
+        path_cost = branch[n][1]
+        goal_path.append(grid_goal)
+        while branch[n][0] != grid_start:
+            goal_path.append(branch[n][0])
+            n = branch[n][1]
+        goal_path.append(branch[n][0])
+
+    else:
+        print('**********************')
+        print('Failed to find a path!')
+        print('**********************')
+    return goal_path[::-1], path_cost        
+
+
+def heuristic(position, goal_position):
+    return  # np.linalg.norm(np.array(position) - np.array(goal_position)
