@@ -251,7 +251,7 @@ class RRT:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                memoize_nodes(grid, heuristic, x_init, x_goal, x_new, rrt_cost)
+                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near)
         States
         print ("RRT Path Mapped")
 
@@ -305,7 +305,7 @@ def valid_actions(grid, rrt_vertex):
     return valid_actions
 
 
-def memoize_nodes(grid, h, x_init, x_goal, rrt_node, rrt_cost):
+def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
 
     rrt_path = []
     path_cost = 0
@@ -335,24 +335,24 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, rrt_cost):
         if current_node == x_init:
             current_cost = 0.0
         else:              
-            current_cost = branch[rrt_node][rrt_cost]
+            current_cost = branch[current_node][0]
             
-        if current_node == x_goal:        
+        if current_node == x_goal < 200:        
             print('Found memoized rrt node.')
             found = True
             break
         else:
-            for action in valid_actions(grid, current_node):
+            for action in rrt_path:
                 # get the tuple representation
                 da = action.delta
-                next_node = (current_node[0] + da[0], current_node[1] + da[1])
-                branch_cost = current_cost + action.cost
-                queue_cost = branch_cost + h(next_node, x_goal)
+                next_node = (x_near[0] , x_near[1])
+                branch_cost = h
+                #queue_cost = branch_cost + h(next_node, x_goal)
                 
                 if next_node not in visited:                
                     visited.add(next_node)               
-                    branch[next_node] = (current_node, branch_cost, action)
-                    queue.put((next_node, queue_cost))
+                    branch[next_node] = (current_node, current_cost)
+                    queue.put((next_node, h))
              
     if found:
         # retrace steps
@@ -363,6 +363,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, rrt_cost):
             rrt_path.append(branch[n][0])
             n = branch[n][0]
         rrt_path.append(branch[n][0])
+        print("rrt", rrt_path)
     else:
         print('**********************')
         print('Failed to find a rrt_path!')
