@@ -340,7 +340,25 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
         if current_node == x_goal < 200:        
             print('Found memoized rrt node.')
             found = True
-            break
+            #break
+        
+            if found:
+                # retrace steps
+                n = x_goal
+                path_cost = branch[n][1]
+                rrt_path.append(x_goal)
+                while branch[n][1] != x_init:
+                    rrt_path.append(branch[n][0])
+                    n = branch[n][0]
+                rrt_path.append(branch[n][0])
+                print("rrt", rrt_path)
+                return
+                
+            else:
+                print('**********************')
+                print('Failed to find a rrt_path!')
+                print('**********************') 
+
         else:
             for action in rrt_path:
                 # get the tuple representation
@@ -354,21 +372,8 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
                     branch[next_node] = (current_node, current_cost)
                     queue.put((next_node, h))
              
-    if found:
-        # retrace steps
-        n = x_goal
-        path_cost = branch[n][1]
-        rrt_path.append(x_goal)
-        while branch[n][1] != x_init:
-            rrt_path.append(branch[n][0])
-            n = branch[n][0]
-        rrt_path.append(branch[n][0])
-        print("rrt", rrt_path)
-    else:
-        print('**********************')
-        print('Failed to find a rrt_path!')
-        print('**********************') 
-    return rrt_path[::-1], path_cost
+        
+        return rrt_path[::-1], path_cost
 
 
 
