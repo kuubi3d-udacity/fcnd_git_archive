@@ -245,6 +245,7 @@ class RRT:
                
                #self.rrt_goal = round(x_near[0],[1])      
                print ("Goal Found.")
+               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near)
                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
@@ -323,11 +324,12 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
     
 
     branch = {}
-    found = False
+    #found = False
 
 
     print("rrt vertex", rrt_node[v],  "\n")
     print("rrt goal", x_goal, "\n")
+    print("rrt cost", h)
     
     while not queue.empty():
         item = queue.get()
@@ -352,8 +354,9 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
                     n = branch[n][0]
                 rrt_path.append(branch[n][0])
                 print("rrt", rrt_path)
-                return
                 
+                return
+
             else:
                 print('**********************')
                 print('Failed to find a rrt_path!')

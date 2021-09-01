@@ -225,7 +225,7 @@ class RRT:
             u = RRT.select_input(self, x_rand, x_near)
             x_new = RRT.new_state(self, x_near, u, dt)
             
-            v_near = np.array([30, 750])
+            #v_near = np.array([30, 750])
             norm_g = np.array(x_goal)
             norm_n = np.array(x_near)
             #norm_n = np.array(v_near)
@@ -345,7 +345,8 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
             for action in rrt_path:
                 # get the tuple representation
                 da = action.delta
-                next_node = (x_near[0] , x_near[1])
+                next_node = (x_near[0] + RRT , x_near[1] + RRT)
+                #next_node = (x_near[0] + RRT.dt , x_near[1] + RRT.dt)
                 branch_cost = h
                 #queue_cost = branch_cost + h(next_node, x_goal)
                 
