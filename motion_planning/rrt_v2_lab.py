@@ -1,3 +1,4 @@
+import queue
 import sys
 
 import argparse
@@ -284,11 +285,11 @@ class Action(Enum):
 
 
 queue = PriorityQueue()
-queue.put((0, RRT.x_goal))
+#queue.put((0, RRT.x_goal))
 visited = set(RRT.x_goal)
 rrt_path = []
-
 branch = {}
+
 
 
 def valid_actions(grid, current_node):
@@ -319,64 +320,74 @@ def valid_actions(grid, current_node):
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     
     
-    path_cost = h
+    edge_cost = int(h) 
+  
     found = False
-
+    
     v=1
+    
 
+    print("x_near", x_near)
+    print("edge cost", edge_cost)
+    branch[edge_cost] = (tuple(rrt_new), x_near)
 
     
-    queue.put((x_goal, 0))
     visited = set(x_goal)
-    
-    item = queue.get()
-    current_node = item[1]
-    if current_node == x_goal:
-        current_cost = 0.0
-    else:              
-        current_cost = branch[current_node][0]
-    
+
     print("branch", branch)
-    print("current_node", current_node, "\n")  
+
+    item = queue.get()
+    current_node = item[edge_cost]
+    #if current_node == x_goal:
+        #current_cost = 0.0
+    #else:              
+        #current_cost = branch[current_node][0]
+    
+    
+    print("current_node", current_node, "\n") 
+
+
     norm_start = np.array(x_init)
     norm_current = np.array(current_node)
     #print("x_goal", x_goal, "\n")  
     
-    if  np.linalg.norm(norm_start - norm_current) < 200:        
-        print('Generating RRT Waypoints')
-        found = True
+    #if  np.linalg.norm(norm_start - norm_current) < 200:        
+        #print('Generating RRT Waypoints')
+        #found = True
         
 
-    else:
+    #else:
         #for action in valid_actions(grid, current_node):
             # get the tuple representation
             #da = action.delta
-        next_node = (rrt_new[0], rrt_new[1])
-        branch_cost = h
+            
+        #if  np.linalg.norm(current_node - x_near) < np.linalg.norm(next_node - x_near):
+            #return
+    next_node = (x_near[0], x_near[1])
+    branch_cost = h
+    queue.put((edge_cost, tuple(rrt_new), x_near))    
         #queue_cost = branch_cost + h(next_node, x_goal)
         
-        if next_node not in visited:                
-            visited.add(next_node)               
-            branch[next_node] = (h)
-            queue.put((next_node))
-            
-
-    
+    #if next_node not in visited:                
+        #visited.add(next_node)               
+        #branch[edge_cost] = (current_node, x_near)
+        #queue.put((next_node))
+        #queue.put((edge_cost, tuple(rrt_new), x_near))
 
     #queue.put((x_init, path_cost))
         
-    
+        
 
     print("rrt vertex", rrt_new[v], "\n")
     print("rrt goal", x_goal, "\n")
     print("rrt cost", h)
     
-    
+   
         
 
     if found:
         # retrace steps
-        n = x_goal
+        n = edge_cost
         path_cost = branch[n][0]
         rrt_path.append(x_goal)
         while branch[n][1] != x_init:
@@ -385,15 +396,15 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
         rrt_path.append(branch[n][1])
         print("rrt path mapped", rrt_path)
         
-         
-    
+            
+
     else:
 
-     
+        
         print('**********************')
         print('Failed to find a rrt_path!')
         print('**********************') 
-   
+    
     return rrt_path[::-1], path_cost
 
 
