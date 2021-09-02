@@ -252,7 +252,7 @@ class RRT:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near)
+                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
         States
         print ("RRT Path Mapped")
 
@@ -282,6 +282,10 @@ class Action(Enum):
     def delta(self):
         return (self.value[0], self.value[1])
 
+
+queue = PriorityQueue()
+queue.put((0, RRT.x_goal))
+visited = set(RRT.x_goal)
 rrt_path = []
 
 branch = {}
@@ -354,6 +358,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
             visited.add(next_node)               
             branch[next_node] = (branch_cost, current_node, current_cost)
             queue.put((h, next_node))
+            print("branch", branch)
 
     
 
@@ -361,9 +366,9 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
         
     
 
-        print("rrt vertex", rrt_new[v], "\n")
-        print("rrt goal", x_goal, "\n")
-        print("rrt cost", h)
+    print("rrt vertex", rrt_new[v], "\n")
+    print("rrt goal", x_goal, "\n")
+    print("rrt cost", h)
     
     
         
@@ -371,12 +376,12 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     if found:
         # retrace steps
         n = x_goal
-        path_cost = branch[n][1]
+        path_cost = branch[n][0]
         rrt_path.append(x_goal)
         while branch[n][1] != x_init:
-            rrt_path.append(branch[n][0])
-            n = branch[n][0]
-        rrt_path.append(branch[n][0])
+            rrt_path.append(branch[n][1])
+            n = branch[n][1]
+        rrt_path.append(branch[n][1])
         print("rrt path mapped", rrt_path)
         
          
