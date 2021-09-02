@@ -319,7 +319,7 @@ def valid_actions(grid, current_node):
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     
     
-    path_cost = h
+    edge_cost = int(h)
     found = False
 
     v=1
@@ -356,8 +356,8 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
         
         if next_node not in visited:                
             visited.add(next_node)               
-            branch[next_node] = (branch_cost, current_node, current_cost)
-            queue.put((h, next_node))
+            branch[next_node] = (current_node, h)
+            queue.put(next_node, current_node, h)
             print("branch", branch)
 
     
