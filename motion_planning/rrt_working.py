@@ -209,7 +209,7 @@ class RRT:
         x_init = (20, 150)
         path = [(20, 30), (40, 50)]
 
-        print ('Generating RRT. It may take a few seconds...')
+        print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
 
         for _ in range(num_vertices):
@@ -225,7 +225,7 @@ class RRT:
             u = RRT.select_input(self, x_rand, x_near)
             x_new = RRT.new_state(self, x_near, u, dt)
             
-            v_near = np.array([30, 750])
+            #v_near = np.array([30, 750])
             norm_g = np.array(x_goal)
             norm_n = np.array(x_near)
             #norm_n = np.array(v_near)
@@ -245,6 +245,7 @@ class RRT:
                
                #self.rrt_goal = round(x_near[0],[1])      
                print ("Goal Found.")
+               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near)
                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
@@ -312,6 +313,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
     queue = PriorityQueue()
     queue.put((x_init, 0))
     
+    
     v=0
     
 
@@ -323,11 +325,12 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
     
 
     branch = {}
-    found = False
+    #found = False
 
 
     print("rrt vertex", rrt_node[v],  "\n")
     print("rrt goal", x_goal, "\n")
+    print("rrt cost", h)
     
     while not queue.empty():
         item = queue.get()
@@ -336,9 +339,14 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
             current_cost = 0.0
         else:              
             current_cost = branch[current_node][0]
-            
-        if current_node == x_goal < 200:        
-            print('Found memoized rrt node.')
+        
+        print("current_node", current_node, "\n")  
+        norm_goal = np.array(x_goal)
+        norm_current = np.array(x_near)
+        #print("x_goal", x_goal, "\n")  
+        
+        if  np.linalg.norm(norm_goal - norm_current) < 200:        
+            print('Generating RRT Waypoints')
             found = True
             break
         else:
@@ -353,7 +361,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
                     visited.add(next_node)               
                     branch[next_node] = (current_node, current_cost)
                     queue.put((next_node, h))
-             
+  
     if found:
         # retrace steps
         n = x_goal
@@ -363,11 +371,15 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_node, x_near):
             rrt_path.append(branch[n][0])
             n = branch[n][0]
         rrt_path.append(branch[n][0])
-        print("rrt", rrt_path)
+        print("rrt path mapped", rrt_path)
+        
+        return
+
     else:
         print('**********************')
         print('Failed to find a rrt_path!')
         print('**********************') 
+
     return rrt_path[::-1], path_cost
 
 
