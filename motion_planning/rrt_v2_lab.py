@@ -285,7 +285,7 @@ class Action(Enum):
 
 
 queue = PriorityQueue()
-#queue.put((0, RRT.x_goal))
+queue.put((0, RRT.x_goal))
 visited = set(RRT.x_goal)
 rrt_path = []
 branch = {}
@@ -337,7 +337,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     print("branch", branch)
 
     item = queue.get()
-    current_node = item[edge_cost]
+    current_node = item[1]
     #if current_node == x_goal:
         #current_cost = 0.0
     #else:              
@@ -388,7 +388,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     if found:
         # retrace steps
         n = edge_cost
-        path_cost = branch[n][0]
+        edge_cost = branch[n][0]
         rrt_path.append(x_goal)
         while branch[n][1] != x_init:
             rrt_path.append(branch[n][1])
@@ -405,7 +405,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
         print('Failed to find a rrt_path!')
         print('**********************') 
     
-    return rrt_path[::-1], path_cost
+    return rrt_path[::-1], edge_cost
 
 
 
