@@ -335,8 +335,8 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
     
     visited = set(x_goal)
-    rrt_edges = branch.items()
-    print("rrt edges", sorted(rrt_edges))
+    rrt_edges = sorted(branch.items())
+    print("rrt edges", (rrt_edges))
     
 
     item = queue.get()
@@ -358,22 +358,34 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     print("rrt goal", x_goal, "\n")
     print("rrt cost", h)
 
-    if  np.linalg.norm(norm_start - norm_current) < 200:        
-        print('Generating RRT Waypoints')
-        found = True
+    #if  np.linalg.norm(norm_start - norm_current) < 200:        
+        #print('Generating RRT Waypoints')
+        #found = True
     
 
 
 
     if found:
 
-        rrt_edges = branch.items()
+        #rrt_edges = branch.items()
         #print(sorted(rrt_edges))
         print("Sorting", sorted(rrt_edges))
+        
+        item = queue.get()
+        
+        current_edge = item[1]
+        current_node = (current_edge[0], current_edge[1])
+
+        next_edge = item[1]
+        next_node = (next_edge[0], next_edge[1])
+
+
+        #if np.linalg.norm()
+
 
         # retrace steps
-        n = edge_cost
-        edge_cost = branch[n][0]
+        n = int(edge_cost)
+        #edge_cost = branch[n][0]
         rrt_path.append(x_goal)
         while branch[n][1] != x_init:
             rrt_path.append(branch[n][1])
