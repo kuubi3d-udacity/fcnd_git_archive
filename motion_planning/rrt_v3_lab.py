@@ -321,8 +321,10 @@ def valid_actions(grid, current_node):
 
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
-    edge_cost = h 
-    cost_new = 0
+    edge_cost = h
+    cost_new = 0 
+    #cost_new = 0
+    #cost_a, cost_b = 0
     found = False
     
     v=1
@@ -357,7 +359,9 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
         # Map Path to Start Node
         print("Sorting", sorted(rrt_edges))
-        
+        cost_new = 0
+        cost_a = 0 
+        cost_b = 0
         item = queue.get()
     
         current_edge = item[1]
@@ -380,6 +384,11 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
             node_a =  next_edge[1]
             cost_a =  next_edge[0]
             print (cost_a) 
+
+            #branch.pop(i)
+            next_edge = item[1]
+            node_b = next_edge[1]
+            cost_b = next_edge[0]
 
             if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
                 cost_new = cost_a
