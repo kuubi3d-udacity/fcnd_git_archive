@@ -385,7 +385,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
                 next_edge = item[1]    
                 node_a =  next_edge[1]
-                cost_a =  next_edge[0]
+                cost_a =  i
                 print (cost_a)
                 
                 #find nearest neighbor
@@ -393,13 +393,18 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
                     #branch.pop(i)
                     next_edge = item[1]
                     node_b = next_edge[1]
-                    cost_b = next_edge[0] 
-                    
-                if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
-                    cost_new = cost_a
-                else:
-                    cost_new = cost_b
-                print ("cost_new", cost_new)
+                    cost_b = i
+                    print ("cost_a1", cost_a)
+
+
+                    if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
+                        cost_new = cost_a
+                        print ("cost_a", cost_a)
+                    else:
+                        cost_new = cost_b
+                    print ("cost_new", cost_new)
+
+                    continue
 
             #n = int(cost_new)   
             rrt_path.append(branch[cost_new][1])
