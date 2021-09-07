@@ -340,15 +340,18 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
     norm_start = np.array(x_init)
     norm_current = np.array(current_node)
+    print ("norm_start", norm_start)
+    print ("norm_current", norm_current)
+
     queue.put((edge_cost, tuple(rrt_new), x_near)) 
 
     print("rrt vertex", rrt_new[v], "\n")
     print("rrt goal", x_goal, "\n")
     print("rrt cost", h)
-    print("distance to start node", np.linalg.norm(norm_start - norm_current))
+    print("distance to start node", np.linalg.norm(norm_current - norm_start))
 
 
-    if  np.linalg.norm(norm_start - norm_current) < 200:        
+    if  np.linalg.norm(norm_current - norm_start) < 200:        
         print('Generating RRT Waypoints')
         found = True
     
@@ -374,13 +377,9 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
             indx = np.array(i)
             print ("index", i)
             
-            node_dist = np.linalg.norm(next_edge - indx)
+            #node_dist = np.linalg.norm(next_edge - indx)
 
-            if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
-                cost_new = cost_a
-            else:
-                cost_new = cost_b
-            print ("cost_new", cost_new)
+           
             
             while branch[i][1] != x_init:
 
@@ -391,10 +390,16 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
                 
                 #find nearest neighbor
                 while current_edge[1] != next_edge[0]:
-                    branch.pop(i)
+                    #branch.pop(i)
                     next_edge = item[1]
                     node_b = next_edge[1]
-                    cost_b = next_edge[0]
+                    cost_b = next_edge[0] 
+                    
+                if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
+                    cost_new = cost_a
+                else:
+                    cost_new = cost_b
+                print ("cost_new", cost_new)
 
             #n = int(cost_new)   
             rrt_path.append(branch[cost_new][1])
