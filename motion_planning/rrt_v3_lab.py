@@ -320,11 +320,9 @@ def valid_actions(grid, current_node):
 
 
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
-
-    edge_cost = h
-    cost_new = 0 
-    #cost_new = 0
-    #cost_a, cost_b = 0
+    
+    
+    edge_cost = h 
     found = False
     
     v=1
@@ -343,83 +341,67 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
 
     norm_start = np.array(x_init)
     norm_current = np.array(current_node)
+    print ("norm_start", norm_start)
+    print ("norm_current", norm_current)
+
     queue.put((edge_cost, tuple(rrt_new), x_near)) 
 
     print("rrt vertex", rrt_new[v], "\n")
     print("rrt goal", x_goal, "\n")
     print("rrt cost", h)
-    print("distance to start node", np.linalg.norm(norm_start - norm_current))
+    print("distance to start node", np.linalg.norm(norm_current - norm_start))
 
 
-    if  np.linalg.norm(norm_start - norm_current) < 200:        
+    #if  np.linalg.norm(norm_start - norm_current) < 200:        
+        #print('Generating RRT Waypoints')
+        #found = True
+    
+
+
+
+    if  np.linalg.norm(norm_current - norm_start) < 200:        
         print('Generating RRT Waypoints')
         found = True
-    
-        print("found", found)
 
-        # Map Path to Start Node
+        #rrt_edges = branch.items()
+        #print(sorted(rrt_edges))
         print("Sorting", sorted(rrt_edges))
-        cost_new = 0
-        cost_a = 0 
-        cost_b = 0
+        
         item = queue.get()
-    
+        
         current_edge = item[1]
-        current_node = current_edge[1]
-        keys = {}
-        #rrt_path.append(branch[...][1])
-        for k in branch:
-            keys[k]= k
-            
-        print("key", keys)
-        for i in branch:
-            
-            cost_new = i
-            print ("cost new", cost_new)
-            indx = np.array(i)
-            print ("index", i)
-            
-            #node_dist = np.linalg.norm(next_edge - indx)
-            next_edge = item[1]    
-            node_a =  next_edge[1]
-            cost_a =  next_edge[0]
-            print (cost_a) 
+        current_node = (current_edge[0], current_edge[1])
 
-            #branch.pop(i)
-            next_edge = item[1]
-            node_b = next_edge[1]
-            cost_b = next_edge[0]
+        next_edge = item[1]
+        next_node = (next_edge[0], next_edge[1])
 
-            if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
-                cost_new = cost_a
-            else:
-                cost_new = cost_b
-            print ("cost_new", cost_new)
-            
-            while branch[i][1] != x_init:
-              
-                #find nearest neighbor
-                while current_edge[1] != next_edge[0]:
-                    branch.pop(i)
-                    next_edge = item[1]
-                    node_b = next_edge[1]
-                    cost_b = next_edge[0]
 
-            #n = int(cost_new)   
-            rrt_path.append(branch[cost_new][1])
-            
-            current_edge = item[1]
-            current_node = current_edge[1]
-            #cost = current_edge[0]
+        #if np.linalg.norm()
+
+
+        # retrace steps
+        n = int(edge_cost)
+        #edge_cost = branch[n][0]
+        rrt_path.append(x_goal)
+        while branch[n][1] != x_init:
+            rrt_path.append(branch[n][1])
+            n = branch[n][1]
+        rrt_path.append(branch[n][1])
+        print("rrt path mapped", rrt_path)
+ 
+    else:
+
+        
+        print('**********************')
+        print('Failed to find a rrt_path!')
+        print('**********************') 
     
-    return rrt_path[::-1], cost_new
+    return rrt_path[::-1], edge_cost
 
 
 def heuristic(position, goal_position):
     return np.linalg.norm(np.array(position) - np.array(goal_position))
 
-
-print("rrt path mapped", rrt_path)
 
 #if current_node == x_goal:
         #current_cost = 0.0
