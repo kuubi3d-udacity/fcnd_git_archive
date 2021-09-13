@@ -289,9 +289,9 @@ class Action(Enum):
 queue = PriorityQueue()
 queue.put((0, RRT.x_goal))
 visited = set(RRT.x_goal)
-rrt_path = []
+#rrt_path = []
 branch = {}
-
+RRT.rrt_parent
 
 
 def valid_actions(grid, current_node):
@@ -351,7 +351,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     print("distance to start node", np.linalg.norm(norm_current - norm_start))
 
 
-    if  np.linalg.norm(norm_current - norm_start) < 200:        
+    if  edge_cost < 200:        
         print('Generating RRT Waypoints')
         found = True
     
@@ -364,6 +364,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     
         current_edge = item[1]
         current_node = current_edge[1]
+        parent_node = rrt_path.predecessor()
         keys = {}
         #rrt_path.append(branch[...][1])
         for k in branch:
