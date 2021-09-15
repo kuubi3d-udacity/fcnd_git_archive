@@ -84,8 +84,8 @@ class RRT:
     def add_rrt_vertex(self, x_new):
         self.rrt_path.add_node(tuple(RRT.x_init))
     
-    def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+    def add_rrt_edge(self, x_near, x_new, cost, u):
+        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), tuple(cost), orientation=u)
 
     @property
     def rrt_vertices(self):
@@ -253,7 +253,7 @@ class RRT:
                
                #self.rrt_goal = round(x_near[0],[1])      
                print ("Goal Found.")
-               self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
+               self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
@@ -268,7 +268,7 @@ class RRT:
         return rrt 
 
 
-    def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
+    def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
         
         edge_cost = h 
@@ -306,12 +306,27 @@ class RRT:
         print("rrt cost", h)
         print("distance to start node", np.linalg.norm(norm_current - norm_start))
 
+        if found: 
+            next_edge = item[1]
+        """ 
+         if  np.linalg.norm(norm_current - norm_start) < 200:        
+            print('Generating RRT Waypoints')
+            found = True
+        """
 
         for i in branch:
                 
+                edge_cost = parent_node[2]
+                RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
+                RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
+                #next_node = (next_edge[0], next_edge[1])
+                parent_node = RRT.parent(h)
+                
+                
                 next_edge = item[1]
-                next_node = (next_edge[0], next_edge[1])
-                parent_node = RRT.parent(i) 
+
+
+             
                 cost_new = i
                 print ("cost new", cost_new)
                 indx = np.array(i)
@@ -336,9 +351,7 @@ class RRT:
 
 
 
-        if  np.linalg.norm(norm_current - norm_start) < 200:        
-            print('Generating RRT Waypoints')
-            found = True
+        
 
             #rrt_edges = branch.items()
             #print(sorted(rrt_edges))
