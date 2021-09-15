@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../spot_miro"
 		}
 	],
 	"settings": {}
