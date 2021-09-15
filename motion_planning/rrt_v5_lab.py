@@ -69,8 +69,8 @@ class RRT:
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
     
-    def add_edge(self, x_near, x_new, dist, u):
-        self.tree.add_edge(tuple(x_near), tuple(x_new), tuple(dist), orientation=u)
+    def add_edge(self, x_near, x_new, u):
+        self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
         
     @property
     def vertices(self):
