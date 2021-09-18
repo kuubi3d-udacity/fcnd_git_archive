@@ -305,17 +305,20 @@ class RRT:
         print("rrt goal", x_goal, "\n")
         print("rrt cost", h)
         print("distance to start node", np.linalg.norm(norm_current - norm_start))
-
+        
+        
+        """ 
         if found: 
             next_edge = item[1]
-        """ 
+        
          if  np.linalg.norm(norm_current - norm_start) < 200:        
             print('Generating RRT Waypoints')
             found = True
         """
 
         for i in branch:
-                
+
+            print ("i", i)    
             edge_cost = parent_node[2]
             RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
             RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)

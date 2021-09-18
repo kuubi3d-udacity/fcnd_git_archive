@@ -380,27 +380,16 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
             print ("index", i)
             
             #node_dist = np.linalg.norm(next_edge - indx)
-<<<<<<< HEAD
-            next_edge = item[1]    
-            node_a =  next_edge[1]
-            cost_a =  next_edge[0]
-            print (cost_a) 
-=======
->>>>>>> 5b67244018bb5db32566dad9de1f801033f6e501
 
            
             
             while branch[i][1] != x_init:
-<<<<<<< HEAD
-              
-=======
 
                 next_edge = item[1]    
                 node_a =  next_edge[1]
                 cost_a =  i
                 print (cost_a)
                 
->>>>>>> 5b67244018bb5db32566dad9de1f801033f6e501
                 #find nearest neighbor
                 while current_edge[1] != next_edge[0]:
                     #branch.pop(i)
