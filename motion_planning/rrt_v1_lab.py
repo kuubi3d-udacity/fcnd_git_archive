@@ -248,14 +248,14 @@ class RRT:
                
                #self.rrt_goal = round(x_near[0],[1])      
                print ("Goal Found.")
-               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
+               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
+                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
         States
         print ("RRT Path Mapped")
 
@@ -263,72 +263,25 @@ class RRT:
 
 
 # Assume all actions cost the same.
-class Action(Enum):
-    """
-    An action is represented by a 3 element tuple.
-
-    The first 2 values are the delta of the action relative
-    to the current grid position. The third and final value
-    is the cost of performing the action.
-    """
-
-    #WEST = (0, -1, 1)
-    #EAST = (0, 1, 1)
-    #NORTH = (-1, 0, 1)
-    #SOUTH = (1, 0, 1)
-
-    @property
-    def cost(self):
-        return self.value[2]
-
-    @property
-    def delta(self):
-        return (self.value[0], self.value[1])
-
 
 queue = PriorityQueue()
 queue.put((0, RRT.x_goal))
 visited = set(RRT.x_goal)
-#rrt_path = []
+rrt_path = []
 branch = {}
-RRT.rrt_parent
 
 
-def valid_actions(grid, current_node):
-    """
-    Returns a list of valid actions given a grid and current node.
-    """
-    print("rrt verticies", RRT.vertices)
+def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
-    valid_actions = RRT.vertices
-    n, m = grid.shape[0] - 1, grid.shape[1] - 1
-    x, y = current_node
-
-    # check if the node is off the grid or
-    # it's an obstacle
-
-    #if x - 1 < 0 or grid[x - 1, y] == 1:
-        #valid_actions.remove(Action.NORTH)
-    #if x + 1 > n or grid[x + 1, y] == 1:
-        #valid_actions.remove(Action.SOUTH)
-    #if y - 1 < 0 or grid[x, y - 1] == 1:
-        #valid_actions.remove(Action.WEST)
-    #if y + 1 > m or grid[x, y + 1] == 1:
-        #valid_actions.remove(Action.EAST)
-
-    return valid_actions
-
-
-def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
-
-    edge_cost = h 
-    cost_new = 0
+    
+    edge_cost = int(h) 
+  
     found = False
     
     v=1
     print("x_near", x_near)
     print("edge cost", edge_cost)
-
+    
     branch[edge_cost] = (tuple(rrt_new), x_near)
     visited = set(x_goal)
     rrt_edges = sorted(branch.items())
@@ -339,89 +292,81 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt):
     current_node = item[1]
     print("current_node", current_node, "\n") 
 
-    norm_start = np.array(x_init)
-    norm_current = np.array(current_node)
+
+    norm_start = np.array(x_goal)
+    norm_current = np.array(x_near)
     print ("norm_start", norm_start)
     print ("norm_current", norm_current)
-
+    
     queue.put((edge_cost, tuple(rrt_new), x_near)) 
+
 
     print("rrt vertex", rrt_new[v], "\n")
     print("rrt goal", x_goal, "\n")
     print("rrt cost", h)
     print("distance to start node", np.linalg.norm(norm_current - norm_start))
+    
 
-
-    if  edge_cost < 200:        
+    if  np.linalg.norm(norm_start - norm_current) < 200:        
         print('Generating RRT Waypoints')
         found = True
     
-        print("found", found)
+        if found:
 
-        # Map Path to Start Node
-        print("Sorting", sorted(rrt_edges))
-        
-        item = queue.get()
-    
-        current_edge = item[1]
-        current_node = current_edge[1]
-        parent_node = rrt_path.predecessor()
-        keys = {}
-        #rrt_path.append(branch[...][1])
-        for k in branch:
-            keys[k]= k
+            #rrt_edges = branch.items()
+            #print(sorted(rrt_edges))
+            print("Sorting", sorted(rrt_edges))
             
-        print("key", keys)
-        for i in branch:
+            for i in branch:
+
+                print ("i", i)    
+                edge_cost = parent_node[2]
+                RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
+                RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
+                #next_node = (next_edge[0], next_edge[1])
+                parent_node = RRT.parent(h)
+                
+                next_edge = item[1]
+
+
+                print("Sorting", sorted(RRT.rrt_path.edges))
             
-            cost_new = i
-            print ("cost new", cost_new)
-            indx = np.array(i)
-            print ("index", i)
-            
-            #node_dist = np.linalg.norm(next_edge - indx)
-            next_edge = item[1]    
-            node_a =  next_edge[1]
-            cost_a =  next_edge[0]
-            print (cost_a) 
 
-           
-            
-            while branch[i][1] != x_init:
-              
-                #find nearest neighbor
-                while current_edge[1] != next_edge[0]:
-                    #branch.pop(i)
-                    next_edge = item[1]
-                    node_b = next_edge[1]
-                    cost_b = i
-                    print ("cost_a1", cost_a)
-
-
-                    if np.linalg.norm(cost_a - x_init) < np.linalg.norm(cost_b - x_init):
-                        cost_new = cost_a
-                        print ("cost_a", cost_a)
-                    else:
-                        cost_new = cost_b
-                    print ("cost_new", cost_new)
-
-                    continue
-
-            #n = int(cost_new)   
-            rrt_path.append(branch[cost_new][1])
+            item = queue.get()
             
             current_edge = item[1]
-            current_node = current_edge[1]
-            #cost = current_edge[0]
+            current_node = (current_edge[0], current_edge[1])
+
+            next_edge = item[1]
+            next_node = (next_edge[0], next_edge[1])
+
+
+            #if np.linalg.norm()
+
+
+            # retrace steps
+            n = int(edge_cost)
+            #edge_cost = branch[n][0]
+            rrt_path.append(x_goal)
+            while branch[n][1] != x_init:
+                rrt_path.append(branch[n][1])
+                n = branch[n][1]
+            rrt_path.append(branch[n][1])
+            print("rrt path mapped", rrt_path)
     
-    return rrt_path[::-1], cost_new
+        else:
+
+            
+            print('**********************')
+            print('Failed to find a rrt_path!')
+            print('**********************') 
+        
+        return rrt_path[::-1], edge_cost
 
 
 def heuristic(position, goal_position):
     return np.linalg.norm(np.array(position) - np.array(goal_position))
 
-
-print("rrt path mapped", rrt_path)
 
 #if current_node == x_goal:
         #current_cost = 0.0

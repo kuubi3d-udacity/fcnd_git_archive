@@ -253,67 +253,93 @@ class RRT:
                
                #self.rrt_goal = round(x_near[0],[1])      
                print ("Goal Found.")
-               self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                #self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
+                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt)
                 return rrt
         
         print ("RRT Path Mapped")
         States
         return rrt 
 
+    # Assume all actions cost the same.
+class Action(Enum):
+    """
+    An action is represented by a 3 element tuple.
 
-    def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
+    The first 2 values are the delta of the action relative
+    to the current grid position. The third and final value
+    is the cost of performing the action.
+    """
+
+    #WEST = (0, -1, 1)
+    #EAST = (0, 1, 1)
+    #NORTH = (-1, 0, 1)
+    #SOUTH = (1, 0, 1)
+
+    @property
+    def cost(self):
+        return self.value[2]
+
+    @property
+    def delta(self):
+        return (self.value[0], self.value[1])
+
+
+queue = PriorityQueue()
+queue.put((0, RRT.x_goal))
+visited = set(RRT.x_goal)
+rrt_path = []
+branch = {}
+
+def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
+
     
-        
-        edge_cost = h 
-        found = False
-        
-        v=1
-        print("x_near", x_near)
-        print("edge cost", edge_cost)
+    edge_cost = h 
+    found = False
+    
+    v=1
+    print("x_near", x_near)
+    print("edge cost", edge_cost)
 
-        queue = PriorityQueue()
-        queue.put((0, RRT.x_goal))
-        #visited = set(RRT.x_goal)
-        #rrt_path = rrt
-        branch = {}
+    
 
-        branch[edge_cost] = (tuple(rrt_new), x_near)
-        visited = set(x_goal)
-        rrt_edges = sorted(branch.items())
-        print("rrt edges", (rrt_edges))
+    branch[edge_cost] = (tuple(rrt_new), x_near)
+    visited = set(x_goal)
+    rrt_edges = sorted(branch.items())
+    print("rrt edges", (rrt_edges))
 
 
-        item = queue.get()
-        current_node = item[1]
-        print("current_node", current_node, "\n") 
+    item = queue.get()
+    current_node = item[1]
+    print("current_node", current_node, "\n") 
 
-        norm_start = np.array(x_init)
-        norm_current = np.array(current_node)
-        print ("norm_start", norm_start)
-        print ("norm_current", norm_current)
+    norm_start = np.array(x_init)
+    norm_current = np.array(current_node)
+    print ("norm_start", norm_start)
+    print ("norm_current", norm_current)
 
-        queue.put((edge_cost, tuple(rrt_new), x_near)) 
+    queue.put((edge_cost, tuple(rrt_new), x_near)) 
 
-        print("rrt vertex", rrt_new[v], "\n")
-        print("rrt goal", x_goal, "\n")
-        print("rrt cost", h)
-        print("distance to start node", np.linalg.norm(norm_current - norm_start))
-        
-        
+    print("rrt vertex", rrt_new[v], "\n")
+    print("rrt goal", x_goal, "\n")
+    print("rrt cost", h)
+    print("distance to start node", np.linalg.norm(norm_current - norm_start))
+    
+    
+   
+    if found:
         """ 
-        if found: 
-            next_edge = item[1]
-        
-         if  np.linalg.norm(norm_current - norm_start) < 200:        
-            print('Generating RRT Waypoints')
-            found = True
+        next_edge = item[1]
+    
+        if  np.linalg.norm(norm_current - norm_start) < 200:        
+        print('Generating RRT Waypoints')
+        found = True
         """
 
         for i in branch:
@@ -329,15 +355,15 @@ class RRT:
 
 
             print("Sorting", sorted(RRT.rrt_path.edges))
-            
-            
         
-        return RRT.rrt_path[::-1], edge_cost
+        
+    
+    return RRT.rrt_path[::-1], edge_cost
 
 
-    def heuristic(position, goal_position):
-        
-        return np.linalg.norm(np.array(position) - np.array(goal_position))
+def heuristic(position, goal_position):
+    
+    return np.linalg.norm(np.array(position) - np.array(goal_position))
 
             
         
