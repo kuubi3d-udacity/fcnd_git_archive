@@ -325,7 +325,7 @@ class RRT:
             next_edge = item[1]
 
 
-            print("Sorting", sorted(rrt_edges))
+            print("Sorting", sorted(RRT.rrt_path.edges))
             
             
         
