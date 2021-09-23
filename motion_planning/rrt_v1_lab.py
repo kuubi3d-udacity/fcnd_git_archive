@@ -92,7 +92,12 @@ class RRT:
    
     @property
     def rrt_edges(self):
-        return self.rrt_path.edges()    
+        return self.rrt_path.edges()
+
+    @property
+    def parent(self, x_new):
+        return self.rrt_path.predecessors(x_new)
+    
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -100,7 +105,14 @@ class RRT:
         based on given obstacle data, drone altitude and safety distance
         arguments.
         """
-        
+    
+
+
+
+
+
+
+
         # minimum and maximum north coordinates
         north_min = np.floor(np.min(data[:, 0] - data[:, 3]))
         north_max = np.ceil(np.max(data[:, 0] + data[:, 3]))
