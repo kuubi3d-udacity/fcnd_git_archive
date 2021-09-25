@@ -344,12 +344,13 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
 
         for i in branch:
 
-            print ("i", i)    
+            print ("i", i)
+            parent_node = RRT.parent(h)    
             edge_cost = parent_node[2]
             RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
             RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
             #next_node = (next_edge[0], next_edge[1])
-            parent_node = RRT.parent(h)
+            
             
             next_edge = item[1]
 
