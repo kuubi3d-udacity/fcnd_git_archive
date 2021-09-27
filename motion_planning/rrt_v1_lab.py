@@ -27,7 +27,12 @@ import matplotlib
 #matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
+
 import networkx as nx
+import 
+
+
+
 from IPython import get_ipython
 import time
 
@@ -332,7 +337,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             for i in branch:
 
                 print ("i", i)
-                parent_node = RRT.rrt_path.predecessors(i)
+                parent_node = RRT.parent(i)
                 
                     
                 edge_cost = parent_node[2]
