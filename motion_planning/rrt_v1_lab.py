@@ -29,7 +29,8 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
 
 import networkx as nx
-import 
+import graphviz
+
 
 
 
@@ -59,7 +60,7 @@ class RRT:
     path = [(20, 30), (40, 50)]
      
     path_cost = 0
-
+    g = graphviz.Digraph('RRT Path', format = 'svg', filename='hello.gv')
 
     def __init__(self, x_init):
         # A tree is a special case of a graph with
@@ -69,6 +70,8 @@ class RRT:
 
         self.rrt_path = nx.DiGraph()
         self.rrt_path.add_node(x_init)
+
+        
                 
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
@@ -102,6 +105,10 @@ class RRT:
     @property
     def parent(self, x_new):
         return self.rrt_path.predecessors(x_new)
+
+    def gview(self):
+        return g.view()
+
     
 
     def create_grid(self, data, drone_altitude, safety_distance):
@@ -288,6 +295,10 @@ rrt_path = []
 branch = {}
 
 
+
+        
+
+
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
     
@@ -327,9 +338,17 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     if  np.linalg.norm(norm_start - norm_current) < 200:        
         print('Generating RRT Waypoints')
         found = True
-    
-        if found:
 
+
+        if found:
+            
+            g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
+            RRT.g = rrt_path
+
+            RRT.gview       
+
+            print("gview")
+            
             #rrt_edges = branch.items()
             #print(sorted(rrt_edges))
             print("Sorting", sorted(rrt_edges))
