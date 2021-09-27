@@ -27,7 +27,13 @@ import matplotlib
 #matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
+
 import networkx as nx
+import graphviz
+
+
+
+
 from IPython import get_ipython
 import time
 
@@ -54,7 +60,7 @@ class RRT:
     path = [(20, 30), (40, 50)]
      
     path_cost = 0
-
+    g = graphviz.Digraph('RRT Path', format = 'svg', filename='hello.gv')
 
     def __init__(self, x_init):
         # A tree is a special case of a graph with
@@ -64,6 +70,8 @@ class RRT:
 
         self.rrt_path = nx.DiGraph()
         self.rrt_path.add_node(x_init)
+
+        
                 
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
@@ -92,7 +100,16 @@ class RRT:
    
     @property
     def rrt_edges(self):
-        return self.rrt_path.edges()    
+        return self.rrt_path.edges()
+
+    @property
+    def parent(self, x_new):
+        return self.rrt_path.predecessors(x_new)
+
+    def gview(self):
+        return g.view()
+
+    
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -100,7 +117,14 @@ class RRT:
         based on given obstacle data, drone altitude and safety distance
         arguments.
         """
-        
+    
+
+
+
+
+
+
+
         # minimum and maximum north coordinates
         north_min = np.floor(np.min(data[:, 0] - data[:, 3]))
         north_max = np.ceil(np.max(data[:, 0] + data[:, 3]))
@@ -271,10 +295,14 @@ rrt_path = []
 branch = {}
 
 
+
+        
+
+
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
     
-    edge_cost = h
+    edge_cost = int(h) 
   
     found = False
     
@@ -310,21 +338,31 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     if  np.linalg.norm(norm_start - norm_current) < 200:        
         print('Generating RRT Waypoints')
         found = True
-    
-        if found:
 
+
+        if found:
+            
+            #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
+            #RRT.g = rrt_path
+
+            RRT.gview(self)       
+
+            print("gview")
+            
             #rrt_edges = branch.items()
             #print(sorted(rrt_edges))
             print("Sorting", sorted(rrt_edges))
             
             for i in branch:
 
-                print ("i", i)    
+                print ("i", i)
+                parent_node = RRT.parent
+                
+                    
                 edge_cost = parent_node[2]
                 RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
                 RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
                 #next_node = (next_edge[0], next_edge[1])
-                parent_node = RRT.parent(h)
                 
                 next_edge = item[1]
 

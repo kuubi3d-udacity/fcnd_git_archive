@@ -106,8 +106,8 @@ class RRT:
     def parent(self, x_new):
         return self.rrt_path.predecessors(x_new)
 
-    def gview(self):
-        return g.view()
+    def gview():
+        return RRT.gview()
 
     
 
@@ -313,6 +313,8 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     branch[edge_cost] = (tuple(rrt_new), x_near)
     visited = set(x_goal)
     rrt_edges = sorted(branch.items())
+    RRT.g.edge("rrt_new[0]", "rrt_new[1]")
+    RRT.g.edge("x_near[0]", "x_near[1]")
     print("rrt edges", (rrt_edges))
     
 

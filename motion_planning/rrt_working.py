@@ -345,7 +345,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
             #RRT.g = rrt_path
 
-            RRT.gview()       
+            RRT.gview(self)       
 
             print("gview")
             
