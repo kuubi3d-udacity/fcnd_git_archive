@@ -342,10 +342,10 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
 
         if found:
             
-            g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
-            RRT.g = rrt_path
+            #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
+            #RRT.g = rrt_path
 
-            RRT.gview       
+            RRT.gview()       
 
             print("gview")
             
@@ -356,7 +356,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             for i in branch:
 
                 print ("i", i)
-                parent_node = RRT.parent(i)
+                parent_node = RRT.parent
                 
                     
                 edge_cost = parent_node[2]
