@@ -68,8 +68,8 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
+        #self.rrt_path = nx.DiGraph()
+        #self.rrt_path.add_node(x_init)
 
         
                 
@@ -291,7 +291,7 @@ class RRT:
 queue = PriorityQueue()
 queue.put((0, RRT.x_goal))
 visited = set(RRT.x_goal)
-rrt_path = []
+#rrt_path = []
 branch = {}
 
 
@@ -347,7 +347,9 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
             #RRT.g = rrt_path
 
-            RRT.gview()       
+            item = queue.get()
+
+                  
 
             print("gview")
             
@@ -360,10 +362,15 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
                 print ("i", i)
                 parent_node = RRT.parent
                 
+                current_edge = item[1]
+                current_node = (current_edge[0], current_edge[1])
+
+                next_edge = item[1]
+                next_node = (next_edge[0], next_edge[1])
                     
-                edge_cost = parent_node[2]
-                RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
-                RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
+                #edge_cost = parent_node[1]
+                RRT.add_rrt_vertex(next_edge[0], next_edge[1])
+                RRT.add_rrt_edge(RRT, x_near, rrt_new)
                 #next_node = (next_edge[0], next_edge[1])
                 
                 next_edge = item[1]
@@ -371,28 +378,19 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
 
                 print("Sorting", sorted(RRT.rrt_path.edges))
             
-
-            item = queue.get()
-            
-            current_edge = item[1]
-            current_node = (current_edge[0], current_edge[1])
-
-            next_edge = item[1]
-            next_node = (next_edge[0], next_edge[1])
-
-
+            RRT.gview() 
             #if np.linalg.norm()
 
 
             # retrace steps
             n = int(edge_cost)
             #edge_cost = branch[n][0]
-            rrt_path.append(x_goal)
+            RRT.rrt_path.append(x_goal)
             while branch[n][1] != x_init:
-                rrt_path.append(branch[n][1])
+                RRT.rrt_path.append(branch[n][1])
                 n = branch[n][1]
-            rrt_path.append(branch[n][1])
-            print("rrt path mapped", rrt_path)
+            RRT.rrt_path.append(branch[n][1])
+            print("rrt path mapped", RRT.rrt_path)
     
         else:
 
@@ -401,7 +399,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             print('Failed to find a rrt_path!')
             print('**********************') 
         
-        return rrt_path[::-1], edge_cost
+        return RRT.rrt_path[::-1], edge_cost
 
 
 def heuristic(position, goal_position):
