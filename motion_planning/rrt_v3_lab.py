@@ -90,7 +90,11 @@ class RRT:
    
     @property
     def rrt_edges(self):
-        return self.rrt_path.edges()    
+        return self.rrt_path.edges() 
+
+    @property
+    def parent(self,current_node):
+        return self.tree.predecessors(current_node)
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """

@@ -113,6 +113,10 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
+    @property
+    def parent(self,current_node):
+        return self.tree.predecessors(current_node)
+
         
 
     def create_grid(self, data, drone_altitude, safety_distance):
@@ -295,9 +299,9 @@ class RRT:
                         #parent_node = (self.tree.predecessors(i))
                         
                     
-                        parent_node = self.tree.predecessors(current_node)
-                        rrt_path.add_node(parent_node)
-                        current_node = parent_node
+                        #parent_node = self.parent
+                        rrt_path.add_node(current_node)
+                        current_node = self.parent(current_node)
                         
                         print ("rrt_path", rrt_path)
 
