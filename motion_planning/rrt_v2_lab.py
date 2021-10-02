@@ -78,9 +78,10 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
-
+        #self.rrt_path = nx.DiGraph()
+        #self.rrt_path.add_node(x_init)
+    
+    
         
                 
     def add_vertex(self, x_new):
@@ -88,7 +89,22 @@ class RRT:
     
     def add_edge(self, x_near, x_new, u):
         self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
-        
+    """
+    def parent(self, x_new):
+        return self.tree.predecessors(x_new)
+
+     
+    def add_rrt_vertex(self, x_new):
+        self.rrt_path.add_node(tuple(RRT.x_init))
+    
+    def add_rrt_edge(self, x_near, x_new, u):
+        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+    """
+    
+    def gview():
+        return RRT.gview()   
+
+    
     @property
     def vertices(self):
         return self.tree.nodes()
@@ -97,29 +113,7 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
-    
-    def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
-    
-    def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
-
-    @property
-    def rrt_vertices(self):
-        return self.rrt_path.nodes()
-   
-    @property
-    def rrt_edges(self):
-        return self.rrt_path.edges()
-
-    @property
-    def parent(self, x_new):
-        return self.rrt_path.predecessors(x_new)
-
-    def gview():
-        return RRT.gview()
-
-    
+        
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -273,16 +267,61 @@ class RRT:
 
 
             if np.linalg.norm(norm_g - norm_n) < 200:
-               rrt.add_edge(x_near, x_new, u)
+                rrt.add_edge(x_near, x_new, u)
+                
+                
+                #self.rrt_goal = round(x_near[0],[1])      
+                print ("Goal Found.")
+                RRT.found = True
+
                
+
+                rrt_path = nx.DiGraph()
+                rrt_path.add_node(x_init)
+                #parent_node = RRT.parent(self, rrt_new)
+            
+                found = False
+
+                # find path from goal
+                current_node = x_new
+                
+                while RRT.parent(self, x_new) is not None:
+                
+                    for i in rrt:
+
+                        #edge_cost = int(h) 
+                        #item = queue.get()
+                        #self.branch[edge_cost] = (tuple(rrt_new), x_near) 
+                        #parent_node = (self.tree.predecessors(i))
+                        
+                    
+                        parent_node = self.tree.predecessors(current_node)
+                        rrt_path.add_node(parent_node)
+                        current_node = parent_node
+                        
+                        print ("rrt_path", rrt_path)
+
+                        if current_node == x_init:
+                            return rrt_path
+
+
+                plt.imshow(grid, cmap='Greys', origin='lower')
+                plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+                plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+            
+                print ("rrt goal", RRT.rrt_goal)   
+                #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
+                
+                #rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
+                for (v1, v2) in rrt_path:
+                    plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+                
+                plt.show(block=True)
+
+
                
-               #self.rrt_goal = round(x_near[0],[1])      
-               print ("Goal Found.")
-               RRT.found = True
-               for i in rrt:
-                   rrt
-               self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-               return rrt #, self.rrt_goal
+                #RRT.memoize_nodes(self, grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+                return rrt #, self.rrt_goal
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
@@ -295,32 +334,6 @@ class RRT:
         return rrt 
 
 
-    def memoize_nodes(self, grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
-        
-    
-        found = False
-        
-        while self.parent is not None:
-        
-            #edge_cost = int(h) 
-            #item = queue.get()
-            #self.branch[edge_cost] = (tuple(rrt_new), x_near) 
-            
-            self.add_rrt_vertex(self.parent)
-            print ("rrt_path", self.rrt_path)
-
-
-        plt.imshow(grid, cmap='Greys', origin='lower')
-        plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
-        plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
-       
-        print ("rrt goal", RRT.rrt_goal)   
-        #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
-        
-        #rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-        for (v1, v2) in self.rrt_path:
-            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
-        
         plt.show(block=True)
     
     def heuristic(position, goal_position):
