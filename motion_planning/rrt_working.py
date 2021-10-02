@@ -345,7 +345,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
             #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
             #RRT.g = rrt_path
 
-            RRT.gview()       
+            #RRT.gview()       
 
             print("gview")
             
@@ -358,16 +358,17 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
                 print ("i", i)
                 parent_node = RRT.parent
                 
-                    
-                edge_cost = parent_node[2]
-                RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
-                RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
+                next_edge = item[1]    
+                #edge_cost = h
+                
+                #RRT.add_rrt_vertex(next_edge[0], next_edge[1])
+                #RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
                 #next_node = (next_edge[0], next_edge[1])
                 
-                next_edge = item[1]
+                
 
 
-                print("Sorting", sorted(RRT.rrt_path.edges))
+                print("Sorting", sorted(rrt_path))
             
 
             item = queue.get()
