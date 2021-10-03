@@ -66,7 +66,7 @@ class RRT:
     queue = PriorityQueue()
     queue.put((0, x_goal))
     visited = set(x_goal)
-    #rrt_path = []
+    rrt_path = []
     branch = {}
      
     path_cost = 0
@@ -77,9 +77,14 @@ class RRT:
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
-
+        
         #self.rrt_path = nx.DiGraph()
         #self.rrt_path.add_node(x_init)
+
+    def parent(self,current_node):
+        return RRT.tree.predecessors(current_node)
+        
+        
     
     
         
@@ -89,6 +94,9 @@ class RRT:
     
     def add_edge(self, x_near, x_new, u):
         self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+
+
+        
     """
     def parent(self, x_new):
         return self.tree.predecessors(x_new)
@@ -113,9 +121,8 @@ class RRT:
     def edges(self):
         return self.tree.edges()
 
-    @property
-    def parent(self,current_node):
-        return self.tree.predecessors(current_node)
+    #@property
+    
 
         
 
@@ -280,18 +287,18 @@ class RRT:
 
                
 
-                rrt_path = nx.DiGraph()
-                rrt_path.add_node(x_init)
+                #rrt_path = nx.DiGraph()
+                #rrt_path.add_node(x_init)
                 #parent_node = RRT.parent(self, rrt_new)
             
                 found = False
 
                 # find path from goal
                 current_node = x_new
+                p = RRT.parent(self, x_new) 
+                while p is not None:
                 
-                while RRT.parent(self, x_new) is not None:
-                
-                    for i in rrt:
+                    for _ in range(num_vertices):
 
                         #edge_cost = int(h) 
                         #item = queue.get()
@@ -300,13 +307,13 @@ class RRT:
                         
                     
                         #parent_node = self.parent
-                        rrt_path.add_node(current_node)
+                        RRT.rrt_path.add_node(current_node)
                         current_node = self.parent(current_node)
                         
-                        print ("rrt_path", rrt_path)
+                        print ("rrt_path", RRT.rrt_path)
 
                         if current_node == x_init:
-                            return rrt_path
+                            return RRT.rrt_path
 
 
                 plt.imshow(grid, cmap='Greys', origin='lower')
@@ -317,7 +324,7 @@ class RRT:
                 #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
                 
                 #rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-                for (v1, v2) in rrt_path:
+                for (v1, v2) in RRT.rrt_path:
                     plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
                 
                 plt.show(block=True)
