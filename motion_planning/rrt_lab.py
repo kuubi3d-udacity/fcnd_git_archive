@@ -29,9 +29,10 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
 
 import networkx as nx
+
+import matplotlib.pyplot as plt
+from networkx import Graph
 import graphviz
-
-
 
 
 from IPython import get_ipython
@@ -259,8 +260,8 @@ class RRT:
             #norm_n = np.array(v_near)
            
             
-            print (norm_g, norm_n)
-            print (np.linalg.norm(norm_g - norm_n))
+            print(norm_g, norm_n)
+            print(np.linalg.norm(norm_g - norm_n))
             
             rrt_cost = np.linalg.norm(np.array(x_new) - np.array(x_goal))
             #rrt_cost = np.linalg.norm(norm_g - norm_n)
@@ -268,14 +269,26 @@ class RRT:
 
 
             if np.linalg.norm(norm_g - norm_n) < 200:
-               rrt.add_edge(x_near, x_new, u)
-               
-               parent = list(rrt.get_parent(x_new))
-               print("parent_node", parent)
-               #self.rrt_goal = round(x_near[0],[1])      
-               print ("Goal Found.")
-               #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-               return rrt #, self.rrt_goal
+
+                print ("Goal Found.")
+                rrt.add_edge(x_near, x_new, u)
+                
+                pos = nx.spring_layout(rrt)
+
+                nx.draw_networkx_nodes(rrt, pos)
+                nx.draw_networkx_labels(rrt, pos)
+                nx.draw_networkx_edges(rrt, pos, edge_color='r', arrows = True)
+
+                plt.show(block=True)
+                #print("rrt path", rrt([0],[1],[2]))
+                #parent = list(rrt.get_parent(x_near))
+                #print("parent_node", parent)
+                
+                #self.rrt_goal = round(x_near[0],[1])      
+                
+                print ("Goal Found.")
+                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+                return rrt 
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
@@ -283,7 +296,7 @@ class RRT:
                 rrt.add_edge(x_near, x_new, u)
                 memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
         States
-        print ("RRT Path Mapped")
+        print("RRT Path Mapped")
 
         return rrt 
 
