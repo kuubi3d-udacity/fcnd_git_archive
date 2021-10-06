@@ -289,7 +289,6 @@ class RRT:
                 # find path from goal
                 current_node = x_new
                 
-                while RRT.parent(self, x_new) is not None:
                 
                     for i in rrt:
 
