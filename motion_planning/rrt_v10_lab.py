@@ -43,10 +43,13 @@ from queue import PriorityQueue
 import math
 from collections import Counter
 
+from r_path import RRT_path
+
 get_ipython().run_line_magic('matplotlib', 'inline')
 plt.switch_backend('Qt5agg')
 
 plt.rcParams['figure.figsize'] = 12, 12
+
 
 
 
@@ -66,7 +69,7 @@ class RRT:
     queue = PriorityQueue()
     queue.put((0, x_goal))
     visited = set(x_goal)
-    #rrt_path = []
+    rrt_path = []
     branch = {}
      
     path_cost = 0
@@ -77,9 +80,10 @@ class RRT:
         # directed edges and only one path to any vertex.
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
-
+        
         #self.rrt_path = nx.DiGraph()
         #self.rrt_path.add_node(x_init)
+
     
     
         
@@ -89,20 +93,11 @@ class RRT:
     
     def add_edge(self, x_near, x_new, u):
         self.tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
-    """
-    def parent(self, x_new):
-        return self.tree.predecessors(x_new)
 
-     
-    def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
-    
-    def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
-    """
-    
-    def gview():
-        return RRT.gview()   
+ 
+   
+    def gview(self):
+        return self.gview()   
 
     
     @property
@@ -112,6 +107,9 @@ class RRT:
     @property
     def edges(self):
         return self.tree.edges()
+
+    #@property
+    
 
         
 
@@ -223,8 +221,6 @@ class RRT:
     # 
     # Awesome! Now we'll put everything together and generate an RRT.
 
-    
-
     def generate_RRT(self, grid, x_init, num_vertices, dt):
        
         
@@ -272,37 +268,10 @@ class RRT:
                 
                 #self.rrt_goal = round(x_near[0],[1])      
                 print ("Goal Found.")
-                RRT.found = True
+                found = True
 
-               
+                RRT_path
 
-                rrt_path = nx.DiGraph()
-                rrt_path.add_node(x_init)
-                #parent_node = RRT.parent(self, rrt_new)
-            
-                found = False
-
-                # find path from goal
-                current_node = x_new
-                parent_node = self.tree.predecessors(current_node)
-                
-                while self.tree.predecessors(current_node) is not None:
-                
-                    for i in rrt:
-
-                        #edge_cost = int(h) 
-                        #item = queue.get()
-                        #self.branch[edge_cost] = (tuple(rrt_new), x_near) 
-                        #parent_node = (self.tree.predecessors(i))
-                        
-                        rrt_path.add_node(parent_node)
-                        current_node = parent_node
-                        parent_node = self.tree.predecessors(current_node)
-                        
-                        print ("rrt_path", rrt_path)
-
-                        if current_node == x_init:
-                            return rrt_path
 
 
                 plt.imshow(grid, cmap='Greys', origin='lower')
@@ -313,7 +282,7 @@ class RRT:
                 #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
                 
                 #rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-                for (v1, v2) in rrt_path:
+                for (v1, v2) in RRT.rrt_path:
                     plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
                 
                 plt.show(block=True)
@@ -328,12 +297,14 @@ class RRT:
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
                 #self.memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-        States
+        #States
         print ("RRT Path Mapped")
 
         return rrt 
 
 
+        plt.show(block=True)
+    
     def heuristic(position, goal_position):
         return np.linalg.norm(np.array(position) - np.array(goal_position))
 
