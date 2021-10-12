@@ -29,9 +29,10 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
 
 import networkx as nx
+
+import matplotlib.pyplot as plt
+from networkx import Graph
 import graphviz
-
-
 
 
 from IPython import get_ipython
@@ -68,8 +69,8 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
+        self.path_tree = nx.DiGraph()
+        self.path_tree.add_node(x_init)
 
         
     def add_vertex(self, x_new):
@@ -88,10 +89,10 @@ class RRT:
 
     
     def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
+        self.path_tree.add_node(tuple(RRT.x_init))
     
     def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+        self.path_tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
 
     @property
     def rrt_vertices(self):
@@ -108,8 +109,8 @@ class RRT:
     def gview(self):
         return g.view()
 
-    def get_parent(self,x_new):
-        return self.rrt_path.predecessors(x_new)
+    def get_parent(self, x_new):
+        return self.tree.predecessors(x_new)
 
 
     def create_grid(self, data, drone_altitude, safety_distance):
@@ -239,6 +240,8 @@ class RRT:
 
         print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
+        rrt_path = RRT(x_init)
+        
 
         for _ in range(num_vertices):
 
@@ -259,31 +262,54 @@ class RRT:
             #norm_n = np.array(v_near)
            
             
-            print (norm_g, norm_n)
-            print (np.linalg.norm(norm_g - norm_n))
+            print(norm_g, norm_n)
+            print(np.linalg.norm(norm_g - norm_n))
             
             rrt_cost = np.linalg.norm(np.array(x_new) - np.array(x_goal))
             #rrt_cost = np.linalg.norm(norm_g - norm_n)
             print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 200:
-               rrt.add_edge(x_near, x_new, u)
-               
-               parent = list(rrt.get_parent(x_new))
-               print("parent_node", parent)
-               #self.rrt_goal = round(x_near[0],[1])      
-               print ("Goal Found.")
-               #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-               return rrt #, self.rrt_goal
+            if np.linalg.norm(norm_g - norm_n) < 500:
+
+                print ("Goal Found.")
+                rrt.add_edge(x_near, x_new, u)
+                current_node = x_new
+                #pos = nx.spring_layout(rrt)
+
+                #nx.draw_networkx_nodes(rrt, pos)
+                #nx.draw_networkx_labels(rrt, pos)
+                #nx.draw_networkx_edges(rrt, pos, edge_color='r', arrows = True)
+
+                #plt.show(block=True)
+                #print("rrt path", rrt([0],[1],[2]))
+
+                for _ in range(num_vertices):
+
+                    parent = list(rrt.get_parent(current_node))
+                    parent_node = tuple(parent[0])
+
+                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    print("current_node", current_node)
+                    print("parent", parent)
+                    print("parent node", parent_node)
+
+                    current_node = parent_node
+                    print("new parent", current_node)
+
+                    print("rrt path", rrt)
+                    
+                    
+                    memoize_nodes(grid, rrt_cost, x_init, x_goal, current_node, parent_node, rrt, u)
+                return rrt, rrt_path 
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
         States
-        print ("RRT Path Mapped")
+        print("RRT Path Mapped")
 
         return rrt 
 
@@ -296,9 +322,6 @@ visited = set(RRT.x_goal)
 rrt_path = []
 branch = {}
 
-
-
-        
 
 
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
