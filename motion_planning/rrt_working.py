@@ -270,7 +270,7 @@ class RRT:
             print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 500:
+            if np.linalg.norm(norm_g - norm_n) < 200:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
@@ -296,18 +296,34 @@ class RRT:
 
                     current_node = parent_node
                     print("new parent", current_node)
+                    if parent_node == x_init:
+                        print("Path Mapped")
 
-                    print("rrt path", rrt)
+                        plt.imshow(grid, cmap='Greys', origin='lower')
+                        plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+                        plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+                    
+                        print ("rrt goal", RRT.rrt_goal)   
+                        #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
+
+                        for (v1, v2) in rrt_path.edges:
+                            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+                        
+                        plt.show(block=True)
+        
+                        return rrt, rrt_path
+
+                    #print("rrt path")
                     
                     
-                    memoize_nodes(grid, rrt_cost, x_init, x_goal, current_node, parent_node, rrt, u)
+                    #memoize_nodes(grid, rrt_cost, x_init, x_goal, current_node, parent_node, rrt, u)
                 return rrt, rrt_path 
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
         States
         print("RRT Path Mapped")
 
