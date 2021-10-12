@@ -324,9 +324,6 @@ branch = {}
 
 
 
-        
-
-
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
     
