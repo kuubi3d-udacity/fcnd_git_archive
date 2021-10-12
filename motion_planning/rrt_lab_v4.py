@@ -240,7 +240,6 @@ class RRT:
 
         print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
-        goal_path = RRT(x_init)
 
         for _ in range(num_vertices):
 
@@ -273,7 +272,6 @@ class RRT:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
-                current_node = x_near
                 
                 #pos = nx.spring_layout(rrt)
 
@@ -286,18 +284,15 @@ class RRT:
 
                 for _ in range(num_vertices):
 
-                    parent_node = [rrt.get_parent(current_node)]
-                    print("parent_node", parent_node)
+                    parent_node = tuple(list(rrt.get_parent(x_near)))
 
-                    goal_path.add_rrt_edge(current_node, parent_node, u)
-                    current_node = parent_node
-                    print("rrt path", goal_path)
+                    print("parent_node", parent_node)
                     
                     #self.rrt_goal = round(x_near[0],[1])      
                     
-                    
+                    print ("Goal Found.")
                     #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-                return rrt, goal_path 
+                return rrt 
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to

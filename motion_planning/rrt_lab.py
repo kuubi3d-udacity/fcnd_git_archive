@@ -69,8 +69,8 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
+        self.path_tree = nx.DiGraph()
+        self.path_tree.add_node(x_init)
 
         
     def add_vertex(self, x_new):
@@ -89,10 +89,10 @@ class RRT:
 
     
     def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
+        self.path_tree.add_node(tuple(RRT.x_init))
     
     def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+        self.path_tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
 
     @property
     def rrt_vertices(self):
@@ -240,6 +240,8 @@ class RRT:
 
         print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
+        rrt_path = RRT(x_init)
+        
 
         for _ in range(num_vertices):
 
@@ -268,11 +270,11 @@ class RRT:
             print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 200:
+            if np.linalg.norm(norm_g - norm_n) < 500:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
-                
+                current_node = x_new
                 #pos = nx.spring_layout(rrt)
 
                 #nx.draw_networkx_nodes(rrt, pos)
@@ -284,21 +286,28 @@ class RRT:
 
                 for _ in range(num_vertices):
 
-                    parent_node = list(rrt.get_parent(x_near))
+                    parent = list(rrt.get_parent(current_node))
+                    parent_node = tuple(parent[0])
 
-                    print("parent_node", parent_node)
+                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    print("current_node", current_node)
+                    print("parent", parent)
+                    print("parent node", parent_node)
+
+                    current_node = parent_node
+                    print("new parent", current_node)
+
+                    print("rrt path", rrt)
                     
-                    #self.rrt_goal = round(x_near[0],[1])      
                     
-                    print ("Goal Found.")
-                    #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-                return rrt 
+                    memoize_nodes(grid, rrt_cost, x_init, x_goal, current_node, parent_node, rrt, u)
+                return rrt, rrt_path 
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
+                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
         States
         print("RRT Path Mapped")
 
