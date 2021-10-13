@@ -119,14 +119,7 @@ class RRT:
         based on given obstacle data, drone altitude and safety distance
         arguments.
         """
-    
-
-
-
-
-
-
-
+   
         # minimum and maximum north coordinates
         north_min = np.floor(np.min(data[:, 0] - data[:, 3]))
         north_max = np.ceil(np.max(data[:, 0] + data[:, 3]))
@@ -191,11 +184,7 @@ class RRT:
             if d < closest_dist:
                 closest_dist = d
                 closest_vertex = v
-            '''
-            if np.linalg.norm(x_goal - np.array(v[:2])) < 1.0:
-                print("Found Goal")    
-                sys.exit('Found Goal')
-            '''
+            
         
         return closest_vertex
 
@@ -338,8 +327,6 @@ visited = set(RRT.x_goal)
 rrt_path = []
 branch = {}
 
-
-
 def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
     
     
@@ -390,8 +377,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
 
             print("gview")
             
-            #rrt_edges = branch.items()
-            #print(sorted(rrt_edges))
+            
             print("Sorting", sorted(rrt_edges))
             
             for i in branch:
@@ -400,15 +386,7 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
                 parent_node = RRT.parent
                 
                 next_edge = item[1]    
-                #edge_cost = h
-                
-                #RRT.add_rrt_vertex(next_edge[0], next_edge[1])
-                #RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
-                #next_node = (next_edge[0], next_edge[1])
-                
-                
-
-
+               
                 print("Sorting", sorted(rrt_path))
             
 
@@ -446,85 +424,6 @@ def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
 
 def heuristic(position, goal_position):
     return np.linalg.norm(np.array(position) - np.array(goal_position))
-
-
-#if current_node == x_goal:
-        #current_cost = 0.0
-    #else:              
-        #current_cost = branch[current_node][0]
-        #print("x_goal", x_goal, "\n")  
-    
-    #if  np.linalg.norm(norm_start - norm_current) < 200:        
-        #print('Generating RRT Waypoints')
-        #found = True
-        
-
-    #else:
-        #for action in valid_actions(grid, current_node):
-            # get the tuple representation
-            #da = action.delta
-            
-        #if  np.linalg.norm(current_node - x_near) < np.linalg.norm(next_node - x_near):
-            #return
-       
-        #queue_cost = branch_cost + h(next_node, x_goal)
-        
-    #if next_node not in visited:                
-        #visited.add(next_node)               
-        #branch[edge_cost] = (current_node, x_near)
-        #queue.put((next_node))
-        #queue.put((edge_cost, tuple(rrt_new), x_near))
-
-    #queue.put((x_init, path_cost))
-
-
-
-""" 
-    while not queue.empty():
-        item = queue.get()
-        current_node = item[0]
-        if current_node == x_init:
-            current_cost = 0.0
-        else:              
-            current_cost = branch[rrt_vertex][rrt_cost]
-            
-        if current_node == x_goal:        
-            print('Found memoized rrt node.')
-            found = True
-            break
-        else:
-            for action in valid_actions(grid, current_node):
-                # get the tuple representation
-                da = action.delta
-                next_node = (current_node[0] + da[0], current_node[1] + da[1])
-                branch_cost = current_cost + action.cost
-                queue_cost = branch_cost + h(next_node, x_goal)
-                
-                if next_node not in visited:                
-                    visited.add(next_node)               
-                    branch[next_node] = (branch_cost, current_node, action)
-                    queue.put((queue_cost, next_node))
-             
-    if found:
-        # retrace steps
-        n = x_goal
-        path_cost = branch[n][1]
-        rrt_path.append(x_goal)
-        while branch[n][1] != x_init:
-            rrt_path.append(branch[n][0])
-            n = branch[n][0]
-        rrt_path.append(branch[n][0])
-    else:
-        print('**********************')
-        print('Failed to find a rrt_path!')
-        print('**********************') 
-    return rrt_path[::-1], path_cost
- """
-
-
-
-
-
 
 
                     
