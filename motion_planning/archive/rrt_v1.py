@@ -29,9 +29,10 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import KDTree
 
 import networkx as nx
+
+import matplotlib.pyplot as plt
+from networkx import Graph
 import graphviz
-
-
 
 
 from IPython import get_ipython
@@ -68,11 +69,10 @@ class RRT:
         self.tree = nx.DiGraph()
         self.tree.add_node(x_init)
 
-        self.rrt_path = nx.DiGraph()
-        self.rrt_path.add_node(x_init)
+        self.path_tree = nx.DiGraph()
+        self.path_tree.add_node(x_init)
 
         
-                
     def add_vertex(self, x_new):
         self.tree.add_node(tuple(RRT.x_init))
     
@@ -89,27 +89,29 @@ class RRT:
 
     
     def add_rrt_vertex(self, x_new):
-        self.rrt_path.add_node(tuple(RRT.x_init))
+        self.path_tree.add_node(tuple(RRT.x_init))
     
     def add_rrt_edge(self, x_near, x_new, u):
-        self.rrt_path.add_edge(tuple(x_near), tuple(x_new), orientation=u)
+        self.path_tree.add_edge(tuple(x_near), tuple(x_new), orientation=u)
 
     @property
     def rrt_vertices(self):
-        return self.rrt_path.nodes()
+        return self.path_cost.nodes()
    
     @property
     def rrt_edges(self):
-        return self.rrt_path.edges()
+        return self.path_cost.edges()
 
     @property
     def parent(self, x_new):
-        return self.rrt_path.predecessors(x_new)
+        return self.tree.predecessors(x_new)
 
     def gview(self):
         return g.view()
 
-    
+    def get_parent(self, x_new):
+        return self.tree.predecessors(x_new)
+
 
     def create_grid(self, data, drone_altitude, safety_distance):
         """
@@ -118,11 +120,6 @@ class RRT:
         arguments.
         """
     
-
-
-
-
-
 
 
         # minimum and maximum north coordinates
@@ -217,7 +214,7 @@ class RRT:
     def new_state(self, x_near, u, dt):
         nx = x_near[0] + np.cos(u)*dt
         ny = x_near[1] + np.sin(u)*dt
-        return [nx, ny]
+        return (nx, ny)
 
 
     # ### Putting It All Together
@@ -238,6 +235,8 @@ class RRT:
 
         print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
+        
+        
 
         for _ in range(num_vertices):
 
@@ -258,230 +257,86 @@ class RRT:
             #norm_n = np.array(v_near)
            
             
-            print (norm_g, norm_n)
-            print (np.linalg.norm(norm_g - norm_n))
+            #print(norm_g, norm_n)
+            #print(np.linalg.norm(norm_g - norm_n))
             
             rrt_cost = np.linalg.norm(np.array(x_new) - np.array(x_goal))
             #rrt_cost = np.linalg.norm(norm_g - norm_n)
-            print("edge cost", rrt_cost)
+            #print("edge cost", rrt_cost)
 
 
             if np.linalg.norm(norm_g - norm_n) < 200:
-               rrt.add_edge(x_near, x_new, u)
+
+                print ("Goal Found.")
+                rrt.add_edge(x_near, x_new, u)
+
+                # Now let's plot the generated RRT.
+
                
-               
-               #self.rrt_goal = round(x_near[0],[1])      
-               print ("Goal Found.")
-               memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-               return rrt #, self.rrt_goal
+                plt.imshow(grid, cmap='Greys', origin='lower')
+                plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+                plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+            
+                for (v1, v2) in rrt.edges:
+                    plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+                
+                plt.show(block=True)
+                
+
+                rrt_path = RRT(x_init)
+                current_node = x_new
+
+                #pos = nx.spring_layout(rrt)
+
+                #nx.draw_networkx_nodes(rrt, pos)
+                #nx.draw_networkx_labels(rrt, pos)
+                #nx.draw_networkx_edges(rrt, pos, edge_color='r', arrows = True)
+
+                #plt.show(block=True)
+                #print("rrt path", rrt([0],[1],[2]))
+
+                for _ in range(num_vertices):
+
+                    parent = list(rrt.get_parent(current_node))
+                    parent_node = tuple(parent[0])
+
+                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    print("current_node", current_node)
+                    print("parent", parent)
+                    print("parent node", parent_node)
+
+                    current_node = parent_node
+                    print("new parent", current_node)
+                    
+                    if parent_node == x_init:
+                        print("Path Mapped")
+
+                        plt.imshow(grid, cmap='Greys', origin='lower')
+                        plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
+                        plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
+                    
+                        for (v1, v2) in rrt_path.path_tree.edges:
+                            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
+                        
+                        plt.show(block=True)
+        
+                        return rrt
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
                 # the edge
                 rrt.add_edge(x_near, x_new, u)
-                memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
-        States
-        print ("RRT Path Mapped")
+                #memoize_nodes(grid, rrt_cost, x_init, x_goal, x_new, x_near, rrt, u)
 
-        return rrt 
-
-
-# Assume all actions cost the same.
-
-queue = PriorityQueue()
-queue.put((0, RRT.x_goal))
-visited = set(RRT.x_goal)
-rrt_path = []
-branch = {}
-
-
-
-        
-
-
-def memoize_nodes(grid, h, x_init, x_goal, rrt_new, x_near, rrt, u):
-    
-    
-    edge_cost = int(h) 
-  
-    found = False
-    
-    v=1
-    print("x_near", x_near)
-    print("edge cost", edge_cost)
-    
-    branch[edge_cost] = (tuple(rrt_new), x_near)
-    visited = set(x_goal)
-    rrt_edges = sorted(branch.items())
-    print("rrt edges", (rrt_edges))
-    
-
-    item = queue.get()
-    current_node = item[1]
-    print("current_node", current_node, "\n") 
-
-
-    norm_start = np.array(x_goal)
-    norm_current = np.array(x_near)
-    print ("norm_start", norm_start)
-    print ("norm_current", norm_current)
-    
-    queue.put((edge_cost, tuple(rrt_new), x_near)) 
-
-
-    print("rrt vertex", rrt_new[v], "\n")
-    print("rrt goal", x_goal, "\n")
-    print("rrt cost", h)
-    print("distance to start node", np.linalg.norm(norm_current - norm_start))
-    
-
-    if  np.linalg.norm(norm_start - norm_current) < 200:        
-        print('Generating RRT Waypoints')
-        found = True
-
-
-        if found:
+        print("RRT Path Mapped")    
+        return rrt   
             
-            #g = graphviz.Digraph('RRT Path', format='svg', filename='rrt.gv')
-            #RRT.g = rrt_path
+        #States
+     
+    # Assume all actions cost the same.
 
-            RRT.gview(self)       
-
-            print("gview")
-            
-            #rrt_edges = branch.items()
-            #print(sorted(rrt_edges))
-            print("Sorting", sorted(rrt_edges))
-            
-            for i in branch:
-
-                print ("i", i)
-                parent_node = RRT.parent
-                
-                    
-                edge_cost = parent_node[2]
-                RRT.add_rrt_vertex(next_edge[0], next_edge[1], edge_cost, u)
-                RRT.add_rrt_edge(RRT, x_near, rrt_new, edge_cost, u)
-                #next_node = (next_edge[0], next_edge[1])
-                
-                next_edge = item[1]
-
-
-                print("Sorting", sorted(RRT.rrt_path.edges))
-            
-
-            item = queue.get()
-            
-            current_edge = item[1]
-            current_node = (current_edge[0], current_edge[1])
-
-            next_edge = item[1]
-            next_node = (next_edge[0], next_edge[1])
-
-
-            #if np.linalg.norm()
-
-
-            # retrace steps
-            n = int(edge_cost)
-            #edge_cost = branch[n][0]
-            rrt_path.append(x_goal)
-            while branch[n][1] != x_init:
-                rrt_path.append(branch[n][1])
-                n = branch[n][1]
-            rrt_path.append(branch[n][1])
-            print("rrt path mapped", rrt_path)
-    
-        else:
-
-            
-            print('**********************')
-            print('Failed to find a rrt_path!')
-            print('**********************') 
-        
-        return rrt_path[::-1], edge_cost
-
-
-def heuristic(position, goal_position):
-    return np.linalg.norm(np.array(position) - np.array(goal_position))
-
-
-#if current_node == x_goal:
-        #current_cost = 0.0
-    #else:              
-        #current_cost = branch[current_node][0]
-        #print("x_goal", x_goal, "\n")  
-    
-    #if  np.linalg.norm(norm_start - norm_current) < 200:        
-        #print('Generating RRT Waypoints')
-        #found = True
-        
-
-    #else:
-        #for action in valid_actions(grid, current_node):
-            # get the tuple representation
-            #da = action.delta
-            
-        #if  np.linalg.norm(current_node - x_near) < np.linalg.norm(next_node - x_near):
-            #return
-       
-        #queue_cost = branch_cost + h(next_node, x_goal)
-        
-    #if next_node not in visited:                
-        #visited.add(next_node)               
-        #branch[edge_cost] = (current_node, x_near)
-        #queue.put((next_node))
-        #queue.put((edge_cost, tuple(rrt_new), x_near))
-
-    #queue.put((x_init, path_cost))
-
-
-
-""" 
-    while not queue.empty():
-        item = queue.get()
-        current_node = item[0]
-        if current_node == x_init:
-            current_cost = 0.0
-        else:              
-            current_cost = branch[rrt_vertex][rrt_cost]
-            
-        if current_node == x_goal:        
-            print('Found memoized rrt node.')
-            found = True
-            break
-        else:
-            for action in valid_actions(grid, current_node):
-                # get the tuple representation
-                da = action.delta
-                next_node = (current_node[0] + da[0], current_node[1] + da[1])
-                branch_cost = current_cost + action.cost
-                queue_cost = branch_cost + h(next_node, x_goal)
-                
-                if next_node not in visited:                
-                    visited.add(next_node)               
-                    branch[next_node] = (branch_cost, current_node, action)
-                    queue.put((queue_cost, next_node))
-             
-    if found:
-        # retrace steps
-        n = x_goal
-        path_cost = branch[n][1]
-        rrt_path.append(x_goal)
-        while branch[n][1] != x_init:
-            rrt_path.append(branch[n][0])
-            n = branch[n][0]
-        rrt_path.append(branch[n][0])
-    else:
-        print('**********************')
-        print('Failed to find a rrt_path!')
-        print('**********************') 
-    return rrt_path[::-1], path_cost
- """
-
-
-
-
+    def heuristic(position, goal_position):
+        return np.linalg.norm(np.array(position) - np.array(goal_position))
 
 
 
@@ -630,24 +485,11 @@ class MotionPlanning(Drone):
         
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
-        
+        #rrt = RRT(RRT.x_init)
         rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
       
 
-        # Now let's plot the generated RRT.
-
-        #sys.exit('generating waypoints')
-        plt.imshow(grid, cmap='Greys', origin='lower')
-        plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
-        plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
-       
-        print ("rrt goal", RRT.rrt_goal)   
-        #plt.plot(RRT.rrt_goal[1], RRT.rrt_goal[0], 'ro')
-
-        for (v1, v2) in rrt.edges:
-            plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
         
-        plt.show(block=True)
         
         
         #sys.exit('generating waypoints')
