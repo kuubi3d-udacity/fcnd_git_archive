@@ -235,6 +235,7 @@ class RRT:
 
         print ('Planning RRT path. It may take a few seconds...')
         rrt = RRT(x_init)
+        self.rrt_path = RRT(x_init)
         
         
 
@@ -283,7 +284,7 @@ class RRT:
                 plt.show(block=True)
                 
 
-                rrt_path = RRT(x_init)
+                
                 current_node = x_new
 
                 #pos = nx.spring_layout(rrt)
@@ -300,22 +301,24 @@ class RRT:
                     parent = list(rrt.get_parent(current_node))
                     parent_node = tuple(parent[0])
 
-                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    self.rrt_path.add_rrt_edge(current_node, parent_node, u)
                     print("current_node", current_node)
                     print("parent", parent)
                     print("parent node", parent_node)
+                    
 
                     current_node = parent_node
                     print("new parent", current_node)
                     
                     if parent_node == x_init:
                         print("Path Mapped")
+                        print (self.rrt_path.rrt_vertices)
 
                         plt.imshow(grid, cmap='Greys', origin='lower')
                         plt.plot(RRT.x_init[1], RRT.x_init[0], 'ro')
                         plt.plot(RRT.x_goal[1], RRT.x_goal[0], 'ro')
                     
-                        for (v1, v2) in rrt_path.path_tree.edges:
+                        for (v1, v2) in self.rrt_path.path_tree.edges:
                             plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
                         
                         plt.show(block=True)
@@ -485,34 +488,37 @@ class MotionPlanning(Drone):
         
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
-        
+        #rrt = RRT(RRT.x_init)
         rrt = RRT.generate_RRT(self, grid, RRT.x_init, RRT.num_vertices, RRT.dt)
-      
+        
 
+        
+        
+        
+        #sys.exit('generating waypoints')
         
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         print("a_star nodes", path, "\n")
                
-        print("rrt nodes", list(rrt.vertices)) #, rrt.edges
-        
-        #rrt_path, _= list(rrt.vertices)
+        print("rrt nodes", rrt.path_tree.nodes) #, rrt.edges
+        #goal_path, _= list(rrt.rrt_vertices)
          
 
         #print (RRT.vertices)
         # Convert path to waypoints
         
         go_path = []
-        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
-        # Set self.waypoints
-        self.waypoints = waypoints
-        # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        self.send_waypoints()
-
-        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in go_path]
+        #waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
         #self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         #self.send_waypoints()
+
+        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in rrt.path_tree.nodes]
+        # Set self.waypoints
+        self.waypoints = waypoints
+        # TODO: send waypoints to sim (this is just for visualization of waypoints)
+        self.send_waypoints()
 
     def start(self):
         self.start_log("Logs", "NavLog.txt")
