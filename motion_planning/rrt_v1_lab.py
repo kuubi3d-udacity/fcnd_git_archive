@@ -266,7 +266,7 @@ class RRT:
             #print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 10:
+            if np.linalg.norm(norm_g - norm_n) < 40:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
@@ -301,7 +301,7 @@ class RRT:
                     parent = list(rrt.get_parent(current_node))
                     parent_node = tuple(parent[0])
 
-                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    rrt_path.add_rrt_edge(round(current_node), round(parent_node), u)
                     print("current_node", current_node)
                     print("parent", parent)
                     print("parent node", parent_node)
