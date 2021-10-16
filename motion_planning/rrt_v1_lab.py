@@ -449,7 +449,7 @@ class MotionPlanning(Drone):
     def plan_path(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
-        TARGET_ALTITUDE = 5
+        TARGET_ALTITUDE = 100
         SAFETY_DISTANCE = 5
 
         self.target_position[2] = TARGET_ALTITUDE
@@ -496,8 +496,8 @@ class MotionPlanning(Drone):
       
 
         
-        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
-        print("a_star nodes", path, "\n")
+        #path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        #print("a_star nodes", path, "\n")
                
         print("rrt nodes", RRT.wp_nodes, "\n") #, rrt.edges
         
@@ -508,13 +508,14 @@ class MotionPlanning(Drone):
         # Convert path to waypoints
         
         
-        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        #waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
-        self.waypoints = waypoints
+        #self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        self.send_waypoints()
+        #self.send_waypoints()
 
         waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        #waypoints = [[r[0], + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
