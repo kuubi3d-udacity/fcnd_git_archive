@@ -267,7 +267,7 @@ class RRT:
             #print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 400:
+            if np.linalg.norm(norm_g - norm_n) < 100:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
@@ -518,6 +518,7 @@ class MotionPlanning(Drone):
         waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #waypoints = [[r[0], + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
+        #waypoints = list(reversed(waypoints))
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         

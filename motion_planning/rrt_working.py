@@ -1,3 +1,4 @@
+from os import truncate
 import queue
 import sys
 
@@ -266,7 +267,7 @@ class RRT:
             #print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 400:
+            if np.linalg.norm(norm_g - norm_n) < 100:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
@@ -300,7 +301,7 @@ class RRT:
 
                     parent = list(rrt.get_parent(current_node))
 
-                    current_node = (round(current_node[0]), round(current_node[1]))
+                    current_node = (int(current_node[0]), int(current_node[1]))
                     parent_node = tuple(round(int(p1)) for p1 in parent[0])
                     
                     print("current_node", current_node)
@@ -449,7 +450,7 @@ class MotionPlanning(Drone):
     def plan_path(self):
         self.flight_state = States.PLANNING
         print("Searching for a path ...")
-        TARGET_ALTITUDE = 5
+        TARGET_ALTITUDE = 100
         SAFETY_DISTANCE = 5
 
         self.target_position[2] = TARGET_ALTITUDE
@@ -496,8 +497,8 @@ class MotionPlanning(Drone):
       
 
         
-        path, _ = a_star(grid, heuristic, grid_start, grid_goal)
-        print("a_star nodes", path, "\n")
+        #path, _ = a_star(grid, heuristic, grid_start, grid_goal)
+        #print("a_star nodes", path, "\n")
                
         print("rrt nodes", RRT.wp_nodes, "\n") #, rrt.edges
         
@@ -514,8 +515,10 @@ class MotionPlanning(Drone):
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         #self.send_waypoints()
 
-        waypoints = [[r[0], + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        #waypoints = [[r[0], + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
+        waypoints = list(reversed(waypoints))
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         
@@ -539,12 +542,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5760, help='Port number')
     parser.add_argument('--host', type=str, default='127.0.0.1', help="host address, i.e. '127.0.0.1'")
+    
+    # ~ from dariemt
+    parser.add_argument('--goal_lon', type=str, help="Goal longitude")
+    parser.add_argument('--goal_lat', type=str, help="Goal latitude")
+    parser.add_argument('--goal_alt', type=str, help="Goal altitude")
     args = parser.parse_args()
 
     conn = MavlinkConnection('tcp:{0}:{1}'.format(args.host, args.port), timeout=240)
     drone = MotionPlanning(conn)
+    
+    # ~ from dariemt
+    #goal_global_position = np.fromstring(f'{args.goal_lon},{args.goal_lat},{args.goal_alt}', dtype='float64', sep=',')
+    #drone = MotionPlanning(conn, goal_global_position=goal_global_position)
+    
     time.sleep(1)
-
     drone.start()
 
     
