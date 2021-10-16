@@ -1,3 +1,4 @@
+from os import truncate
 import queue
 import sys
 
@@ -300,7 +301,7 @@ class RRT:
 
                     parent = list(rrt.get_parent(current_node))
 
-                    current_node = (round(current_node[0]), round(current_node[1]))
+                    current_node = (int(current_node[0]), int(current_node[1]))
                     parent_node = tuple(round(int(p1)) for p1 in parent[0])
                     
                     print("current_node", current_node)
