@@ -266,7 +266,7 @@ class RRT:
             #print("edge cost", rrt_cost)
 
 
-            if np.linalg.norm(norm_g - norm_n) < 40:
+            if np.linalg.norm(norm_g - norm_n) < 400:
 
                 print ("Goal Found.")
                 rrt.add_edge(x_near, x_new, u)
@@ -299,12 +299,16 @@ class RRT:
                 for _ in range(num_vertices):
 
                     parent = list(rrt.get_parent(current_node))
-                    parent_node = tuple(parent[0])
 
-                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    
+                    parent_node = tuple(round(int(p1)) for p1 in parent[0])
+                    
                     print("current_node", current_node)
-                    print("parent", parent)
                     print("parent node", parent_node)
+                    rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    
+                    print("parent", parent)
+                    
                     
 
                     current_node = parent_node
@@ -498,7 +502,7 @@ class MotionPlanning(Drone):
         path, _ = a_star(grid, heuristic, grid_start, grid_goal)
         print("a_star nodes", path, "\n")
                
-        print("rrt nodes", RRT.wp_nodes) #, rrt.edges
+        print("rrt nodes", RRT.wp_nodes, "\n") #, rrt.edges
         
         #rrt_path, _= list(rrt.vertices)
          
@@ -517,6 +521,8 @@ class MotionPlanning(Drone):
         #Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
+        
+        print("waypoints", waypoints)
         self.send_waypoints()
 
     def start(self):
