@@ -300,18 +300,15 @@ class RRT:
 
                     parent = list(rrt.get_parent(current_node))
 
-                    
+                    current_node = (round(current_node[0]), round(current_node[1]))
                     parent_node = tuple(round(int(p1)) for p1 in parent[0])
                     
                     print("current_node", current_node)
                     print("parent node", parent_node)
+
                     rrt_path.add_rrt_edge(current_node, parent_node, u)
                     
-                    print("parent", parent)
-                    
-                    
-
-                    current_node = parent_node
+                    current_node = tuple(parent[0])
                     print("new parent", current_node)
                     
                     if parent_node == x_init:
@@ -511,13 +508,13 @@ class MotionPlanning(Drone):
         # Convert path to waypoints
         
         
-        #waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
-        #self.waypoints = waypoints
+        self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        #self.send_waypoints()
+        self.send_waypoints()
 
-        waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
         self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
