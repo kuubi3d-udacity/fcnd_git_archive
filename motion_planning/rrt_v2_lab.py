@@ -307,11 +307,6 @@ class RRT:
                     print("current_node", current_node)
                     print("parent node", parent_node)
 
-                    rrt_path.add_rrt_edge(current_node, parent_node, u)
-                    
-                    current_node = tuple(parent[0])
-                    print("new parent", current_node)
-                    
                     if parent_node == x_init:
 
                         print("Path Mapped")
@@ -326,8 +321,16 @@ class RRT:
                             plt.plot([v1[1], v2[1]], [v1[0], v2[0]], 'y-')
                         
                         plt.show(block=True)
-        
+
                         return rrt
+
+                    else: 
+                        rrt_path.add_rrt_edge(current_node, parent_node, u)
+                        
+                        current_node = tuple(parent[0])
+                        print("new parent", current_node)
+
+                    
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
