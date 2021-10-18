@@ -301,6 +301,11 @@ class RRT:
 
                     parent = list(rrt.get_parent(current_node))
 
+                    #current_node = (int(current_node[0]), int(current_node[1]))
+                    #current_node = [current_node, ((10, 140))]
+                    #print("current_node", current_node)
+                    #current_node = tuple(map(lambda x: abs(x[0] - x[1], current_node)))
+                    
                     current_node = (int(current_node[0]), int(current_node[1]))
                     parent_node = tuple(round(int(p1)) for p1 in parent[0])
                     

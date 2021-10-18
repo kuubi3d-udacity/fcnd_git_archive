@@ -122,8 +122,6 @@ class RRT:
         arguments.
         """
     
-
-
         # minimum and maximum north coordinates
         north_min = np.floor(np.min(data[:, 0] - data[:, 3]))
         north_max = np.ceil(np.max(data[:, 0] + data[:, 3]))
@@ -307,11 +305,6 @@ class RRT:
                     print("current_node", current_node)
                     print("parent node", parent_node)
 
-                    rrt_path.add_rrt_edge(current_node, parent_node, u)
-                    
-                    current_node = tuple(parent[0])
-                    print("new parent", current_node)
-                    
                     if parent_node == x_init:
 
                         print("Path Mapped")
@@ -328,6 +321,12 @@ class RRT:
                         plt.show(block=True)
         
                         return rrt
+
+                    else:
+                        rrt_path.add_rrt_edge(current_node, parent_node, u)
+                    
+                        current_node = tuple(parent[0])
+                        print("new parent", current_node)
 
             elif grid[int(x_new[0]), int(x_new[1])] == 0:
                 # the orientation `u` will be added as metadata to
