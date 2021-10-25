@@ -478,11 +478,13 @@ class MotionPlanning(Drone):
         grid, north_offset, east_offset = RRT.create_grid(self, data, TARGET_ALTITUDE, SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
         # Define starting point on the grid (this is just grid center)
-        grid_start = (-north_offset, -east_offset)
+        #grid_start = (-north_offset, -east_offset)
+        grid_start = (20, 150)
         # TODO: convert start position to current position rather than map center
         
         # Set goal as some arbitrary position on the grid
-        grid_goal = (-north_offset + 10, -east_offset + 10)
+        #grid_goal = (-north_offset + 10, -east_offset + 10)
+        grid_goal = (30, 750)
        
         # TODO: adapt to set goal as latitude / longitude position and convert
 
@@ -521,7 +523,7 @@ class MotionPlanning(Drone):
         #self.send_waypoints()
 
         waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
-        #waypoints = [[r[0], + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        #waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
         #waypoints = list(reversed(waypoints))
         self.waypoints = waypoints
