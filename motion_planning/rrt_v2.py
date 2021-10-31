@@ -478,13 +478,13 @@ class MotionPlanning(Drone):
         grid, north_offset, east_offset = RRT.create_grid(self, data, TARGET_ALTITUDE, SAFETY_DISTANCE)
         print("North offset = {0}, east offset = {1}".format(north_offset, east_offset))
         # Define starting point on the grid (this is just grid center)
-        #grid_start = (-north_offset, -east_offset)
-        grid_start = (20, 150)
+        grid_start = (-north_offset, -east_offset)
+        #grid_start = (20, 150)
         # TODO: convert start position to current position rather than map center
         
         # Set goal as some arbitrary position on the grid
-        #grid_goal = (-north_offset + 10, -east_offset + 10)
-        grid_goal = (30, 750)
+        grid_goal = (-north_offset + 10, -east_offset + 10)
+        #grid_goal = (30, 750)
        
         # TODO: adapt to set goal as latitude / longitude position and convert
 
@@ -499,7 +499,9 @@ class MotionPlanning(Drone):
         
         # TODO: prune path to minimize number of waypoints
         # TODO (if you're feeling ambitious): Try a different approach altogether!
-        
+        grid_start = (20, 150)
+        grid_goal = (30, 750)
+
         rrt = RRT.generate_RRT(self, grid, grid_start, grid_goal, RRT.num_vertices, RRT.dt)
       
 
@@ -516,17 +518,17 @@ class MotionPlanning(Drone):
         # Convert path to waypoints
         
         
-        #waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
-        #self.waypoints = waypoints
+        self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        #self.send_waypoints()
+        self.send_waypoints()
 
-        waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        #waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
         #waypoints = list(reversed(waypoints))
-        self.waypoints = waypoints
+        #self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         
         print("waypoints", waypoints)
