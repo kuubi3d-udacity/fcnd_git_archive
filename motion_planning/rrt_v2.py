@@ -518,17 +518,17 @@ class MotionPlanning(Drone):
         # Convert path to waypoints
         
         
-        waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
+        #waypoints = [[p[0] + north_offset, p[1] + east_offset, TARGET_ALTITUDE, 0] for p in path]
         # Set self.waypoints
-        self.waypoints = waypoints
+        #self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
-        self.send_waypoints()
+        #self.send_waypoints()
 
-        #waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
+        waypoints = [[r[0], r[1], TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #waypoints = [[r[0] + north_offset, r[1] + east_offset, TARGET_ALTITUDE, 0] for r in RRT.wp_nodes]
         #Set self.waypoints
-        #waypoints = list(reversed(waypoints))
-        #self.waypoints = waypoints
+        waypoints = list(reversed(waypoints))
+        self.waypoints = waypoints
         # TODO: send waypoints to sim (this is just for visualization of waypoints)
         
         print("waypoints", waypoints)
